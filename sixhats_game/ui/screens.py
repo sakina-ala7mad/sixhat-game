@@ -296,6 +296,18 @@ def render_lobby():
         return
 
     if ge.round_expired(session):
+        my_row = next((p for p in players if p["name_key"] == user["name_key"]), None)
+        if my_row and my_row["hat_color"] and not my_row["submitted"] and not my_row["left_game"]:
+            draft_answer = st.session_state.get(f"answer_{session_id}", "")
+            is_first = ge.is_first_submitter(session_id)
+            on_topic, creativity, correction = evaluator.evaluate_scenario_answer(
+                my_row["hat_color"], draft_answer, scenario
+            )
+            bonus = xp_engine.scenario_individual_bonus(0, creativity, is_first)
+            db.submit_answer(session_id, user["display_name"], draft_answer, on_topic, correction,
+                              creativity, base_xp=0, speed_xp=bonus, first_submit=is_first)
+            db.add_user_xp(user["display_name"], bonus, individual=not is_team)
+        ge.auto_submit_timeout(session_id, scenario, skip_name_key=user["name_key"])
         ge.maybe_finish_session(session_id)
         st.rerun()
 
