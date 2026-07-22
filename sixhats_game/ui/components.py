@@ -14,6 +14,20 @@ FACE_ON = "😊"
 FACE_SUBMITTED = "😄"
 FACE_OFF = "💤"
 
+# Pastel tint of each hat color, paired with a text color chosen for a
+# WCAG AA contrast ratio of ~5:1 or better against that specific background
+# (checked by hand, not theme-dependent -- these cards keep their own
+# light pastel look in both dark and light mode so the hat identity reads
+# the same either way).
+HAT_PASTEL = {
+    "white":  {"bg": "#F6F5F1", "text": "#2E2E2E"},   # ~12.4:1
+    "red":    {"bg": "#FBE0DF", "text": "#7A2320"},   # ~8.1:1
+    "black":  {"bg": "#E7E7EA", "text": "#2A2A2A"},   # ~11.6:1
+    "yellow": {"bg": "#FFF6D2", "text": "#5A4A00"},   # ~8.0:1
+    "green":  {"bg": "#DFF3E3", "text": "#1F5C33"},   # ~6.9:1
+    "blue":   {"bg": "#DFEBFB", "text": "#1A4971"},   # ~7.8:1
+}
+
 
 def _dim(hex_color: str) -> str:
     """Return a darker/greyed version of a hat color for 'not joined yet' faces."""
@@ -115,13 +129,21 @@ def render_xp_bar(total_xp: int, label: str = "Your progress"):
 
 def hat_role_card(hat_color: str):
     meta = HATS[hat_color]
+    pastel = HAT_PASTEL[hat_color]
     st.markdown(
         f"""
-        <div class="sh-card">
+        <div class="sh-card" style="background:{pastel['bg']} !important;
+                    border:1px solid rgba(0,0,0,0.08) !important; box-shadow:0 6px 16px rgba(0,0,0,0.10);">
             <div style="font-size:2.2rem;">{meta['icon']}</div>
-            <div class="sh-title">{meta['name']} — {meta['focus']}</div>
-            <div class="sh-soft">{meta['description']}</div>
-            <div class="sh-soft" style="margin-top:0.4rem;"><i>Example: "{meta['example']}"</i></div>
+            <div style="font-weight:800; font-size:1.25rem; color:{pastel['text']} !important; margin-bottom:0.2rem;">
+                {meta['name']} — {meta['focus']}
+            </div>
+            <div style="color:{pastel['text']} !important; opacity:0.88; font-size:0.92rem;">
+                {meta['description']}
+            </div>
+            <div style="color:{pastel['text']} !important; opacity:0.88; font-size:0.92rem; margin-top:0.4rem;">
+                <i>Example: "{meta['example']}"</i>
+            </div>
         </div>
         """,
         unsafe_allow_html=True,
