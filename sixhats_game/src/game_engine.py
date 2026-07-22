@@ -77,7 +77,31 @@ def is_first_submitter(session_id: str) -> bool:
     return not any(p["submitted"] for p in players)
 
 def auto_submit_timeout(session_id: str, scenario: dict, skip_name_key: str | None = None):
-    ...
+    """Called once the round timer hits 0. Any player who hasn't submitted yet
+    (and hasn't left) gets an automatic empty/timeout submission so the round
+    can end and the results screen can show "no answer submitted" for them.
+    `skip_name_key` lets the caller's own answer (already handled separately,
+    with whatever draft they had typed) be excluded from this blanket pass.
+    Safe to call repeatedly from any client -- already-submitted players are
+    left untouched."""
+    session = db.get_session(session_id)
+    is_team = session["scope"] == "team"
+    players = db.get_session_players(session_id)
+    for p in players:
+        if p["submitted"] or p["left_game"]:
+            continue
+        if skip_name_key and p["name_key"] == skip_name_key:
+            continue
+        if not p["hat_color"]:
+            continue
+        is_first = is_first_submitter(session_id)
+        on_topic, creativity, correction = evaluator.evaluate_scenario_answer(
+            p["hat_color"], "", scenario
+        )
+        bonus = xp_engine.scenario_individual_bonus(0, creativity, is_first)
+        db.submit_answer(session_id, p["display_name"], "", on_topic, correction,
+                          creativity, base_xp=0, speed_xp=bonus, first_submit=is_first)
+        db.add_user_xp(p["display_name"], bonus, individual=not is_team)
 
 
 def maybe_finish_session(session_id: str):
