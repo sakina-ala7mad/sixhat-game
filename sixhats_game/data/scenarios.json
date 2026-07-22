@@ -1,0 +1,304 @@
+{
+  "hats": {
+    "white": {
+      "name": "White Hat",
+      "focus": "Facts & Information",
+      "description": "Neutral and objective. Only what we know, what we don't know, and what data says.",
+      "example": "Our exit-interview data shows 40% of resignations happen in the first 90 days.",
+      "color_hex": "#F5F5F0",
+      "icon": "🤍"
+    },
+    "red": {
+      "name": "Red Hat",
+      "focus": "Feelings & Intuition",
+      "description": "Emotions, gut reactions, and hunches — no justification needed.",
+      "example": "Honestly, this new attendance policy just feels punishing, even before I see the numbers.",
+      "color_hex": "#E53935",
+      "icon": "❤️"
+    },
+    "black": {
+      "name": "Black Hat",
+      "focus": "Caution & Risks",
+      "description": "Critical judgement. What could go wrong, what's weak, what's risky.",
+      "example": "If we roll this out company-wide without a pilot, we could get a wave of formal complaints.",
+      "color_hex": "#212121",
+      "icon": "🖤"
+    },
+    "yellow": {
+      "name": "Yellow Hat",
+      "focus": "Optimism & Benefits",
+      "description": "Value, benefits, and why an idea could genuinely work.",
+      "example": "This could cut onboarding time in half and make new hires productive by week two.",
+      "color_hex": "#FDD835",
+      "icon": "💛"
+    },
+    "green": {
+      "name": "Green Hat",
+      "focus": "Creativity & Alternatives",
+      "description": "New ideas, alternatives, provocations. 'What if' thinking.",
+      "example": "What if new hires picked their own onboarding buddy instead of us assigning one?",
+      "color_hex": "#43A047",
+      "icon": "💚"
+    },
+    "blue": {
+      "name": "Blue Hat",
+      "focus": "Process & Control",
+      "description": "Manages the thinking itself — sets the agenda, summarizes, decides next steps.",
+      "example": "Let's park the budget debate, hear the White Hat data first, then decide.",
+      "color_hex": "#1E88E5",
+      "icon": "💙"
+    }
+  },
+
+  "puzzle_bank": {
+    "easy": [
+      {"id": "pe1", "text": "According to HRIS, average time-to-hire this quarter was 34 days.", "hat": "white", "explanation": "This is a neutral, measurable fact from a system of record — classic White Hat."},
+      {"id": "pe2", "text": "I have a bad feeling about merging the two HR teams so suddenly.", "hat": "red", "explanation": "A gut reaction stated without justification is Red Hat, even if it turns out to be right or wrong."},
+      {"id": "pe3", "text": "If we cut the training budget, new hires might underperform in their first month.", "hat": "black", "explanation": "Flagging a risk or downside is Black Hat thinking."},
+      {"id": "pe4", "text": "A four-day work week trial could really boost morale and retention.", "hat": "yellow", "explanation": "Highlighting a potential benefit or upside is Yellow Hat."},
+      {"id": "pe5", "text": "What if candidates recorded a 60-second video instead of writing a cover letter?", "hat": "green", "explanation": "A fresh 'what if' alternative is Green Hat creativity."},
+      {"id": "pe6", "text": "Let's pause here — next we'll hear the data, then the concerns, then vote.", "hat": "blue", "explanation": "Directing the flow of the discussion itself is Blue Hat."},
+      {"id": "pe7", "text": "68% of employees opened the new wellness app in the first week.", "hat": "white", "explanation": "A measured statistic, no opinion attached — White Hat."},
+      {"id": "pe8", "text": "I'm honestly excited about the new office snacks policy, don't ask me why.", "hat": "red", "explanation": "An unexplained emotional reaction is Red Hat."},
+      {"id": "pe9", "text": "This recognition program could backfire and create jealousy between teams.", "hat": "black", "explanation": "Pointing out a possible negative consequence is Black Hat."},
+      {"id": "pe10", "text": "Employees who use the mentorship program stay 20% longer on average.", "hat": "white", "explanation": "This is reported data, not opinion — White Hat."},
+      {"id": "pe11", "text": "Picture an 'HR arcade' where policies are explained through mini-games.", "hat": "green", "explanation": "An imaginative, unconventional idea is Green Hat."},
+      {"id": "pe12", "text": "This could genuinely make our employer brand the best in the industry.", "hat": "yellow", "explanation": "Optimistic upside framing is Yellow Hat."}
+    ],
+    "medium": [
+      {"id": "pm1", "text": "Absenteeism in the support team rose 12% after the shift-schedule change, per the payroll logs.", "hat": "white", "explanation": "A specific, sourced figure with no judgement attached — White Hat."},
+      {"id": "pm2", "text": "Something about this restructuring just feels rushed and cold to me.", "hat": "red", "explanation": "A subjective emotional read, unjustified — Red Hat."},
+      {"id": "pm3", "text": "If managers self-nominate for the leadership program, we may end up with a biased, homogenous cohort.", "hat": "black", "explanation": "Identifying a structural risk in a proposal is Black Hat."},
+      {"id": "pm4", "text": "Automating reference checks could free up 5 hours per recruiter every week for real conversations.", "hat": "yellow", "explanation": "A concrete positive outcome framed hopefully is Yellow Hat."},
+      {"id": "pm5", "text": "What if instead of exit interviews we ran 'stay interviews' every six months?", "hat": "green", "explanation": "Reframing the problem with a novel alternative is Green Hat."},
+      {"id": "pm6", "text": "Before we debate solutions, let's agree on what problem we're actually solving.", "hat": "blue", "explanation": "Framing and controlling the discussion process is Blue Hat."},
+      {"id": "pm7", "text": "Engagement survey scores dropped from 7.8 to 6.9 this cycle across all departments.", "hat": "white", "explanation": "Comparable, factual survey data — White Hat."},
+      {"id": "pm8", "text": "I just don't trust that this policy was written with employees in mind.", "hat": "red", "explanation": "A trust-based gut feeling, no evidence cited — Red Hat."},
+      {"id": "pm9", "text": "Rolling this out during year-end payroll close could overload the whole HR ops team.", "hat": "black", "explanation": "A timing-related risk is still Black Hat caution."},
+      {"id": "pm10", "text": "This benefits package could be the thing that finally beats our biggest competitor on offers.", "hat": "yellow", "explanation": "A confident, benefit-focused claim is Yellow Hat."},
+      {"id": "pm11", "text": "What if performance reviews were replaced with quarterly 'growth conversations' with no rating at all?", "hat": "green", "explanation": "A bold structural reinvention is Green Hat."},
+      {"id": "pm12", "text": "Let's summarize: three ideas on the table, one needs budget approval, one is ready to pilot.", "hat": "blue", "explanation": "Summarizing and organizing next steps is Blue Hat."}
+    ],
+    "hard": [
+      {"id": "ph1", "text": "Across 14 exit interviews last quarter, 'lack of growth' was cited in 9, and 'manager relationship' in 6, with overlap in 4 cases.", "hat": "white", "explanation": "Detailed, precise, sourced data with no interpretation — White Hat, even though it's more complex."},
+      {"id": "ph2", "text": "Even though the numbers say this reorg should work, in my gut it feels like we're going to lose our best people.", "hat": "red", "explanation": "This intentionally contradicts the data yet still states an unjustified feeling — Red Hat, testing whether you separate feeling from fact."},
+      {"id": "ph3", "text": "If we tie bonuses directly to this new AI performance score, employees may start gaming the metric instead of doing real work.", "hat": "black", "explanation": "Anticipating unintended, systemic consequences is advanced Black Hat thinking."},
+      {"id": "ph4", "text": "Done right, a skills-based hiring model could open senior roles to internal talent we've been overlooking for years.", "hat": "yellow", "explanation": "A strategic, long-horizon benefit is still Yellow Hat, just at a higher level of insight."},
+      {"id": "ph5", "text": "What if new managers were paired with a 'reverse mentor' from a junior level for their first 90 days?", "hat": "green", "explanation": "An unconventional structural idea challenging hierarchy norms is Green Hat."},
+      {"id": "ph6", "text": "Before this becomes a Black Hat vs Yellow Hat argument, let's timebox 10 minutes per side and then I'll synthesize.", "hat": "blue", "explanation": "Explicitly managing the other hats and the meeting process is textbook Blue Hat."},
+      {"id": "ph7", "text": "Internal mobility applications increased 22% quarter-over-quarter after the new portal launched, per the ATS export.", "hat": "white", "explanation": "A precise, system-sourced trend statement — White Hat."},
+      {"id": "ph8", "text": "I can't explain it logically, but this candidate just feels like the right culture fit.", "hat": "red", "explanation": "An explicitly non-logical, intuition-based statement is pure Red Hat."},
+      {"id": "ph9", "text": "If we publish salary bands company-wide before fixing existing pay gaps, we risk a wave of internal equity complaints.", "hat": "black", "explanation": "Foreseeing a second-order risk from a well-intentioned policy is Black Hat."},
+      {"id": "ph10", "text": "A well-run alumni network could turn former employees into our best source of referral hires and rehires.", "hat": "yellow", "explanation": "A non-obvious, forward-looking benefit is still Yellow Hat."},
+      {"id": "ph11", "text": "What if job postings had no title at all, only a list of real problems the person would solve?", "hat": "green", "explanation": "A radical reframing of a standard process is Green Hat provocation ('po')."},
+      {"id": "ph12", "text": "Given everything discussed, here's the decision: pilot in one region for 60 days, then reassess with the same three metrics.", "hat": "blue", "explanation": "Making the final call and setting the review process is Blue Hat control."}
+    ]
+  },
+
+  "scenario_bank": {
+    "easy": [
+      {
+        "id": "se1",
+        "level": "easy",
+        "title": "The Free Coffee Machine Rebellion",
+        "situation": "HR just installed a fancy new coffee machine in the break room, but it requires a 4-digit PIN that nobody was ever given, and now there's a 15-person line every morning at 9am while people politely panic before their first meeting.",
+        "keywords": {
+          "white": ["pin", "coffee machine", "line", "9am", "install", "who has the pin", "manual"],
+          "red": ["annoyed", "frustrat", "grumpy", "morning mood", "irritat", "upset"],
+          "black": ["complaint", "late for meeting", "productivity", "risk", "morale drop", "delay"],
+          "yellow": ["team bonding", "chat while waiting", "better coffee", "morale boost", "upgrade"],
+          "green": ["qr code", "app", "shared pin board", "sign up sheet", "rotate", "old machine back"],
+          "blue": ["decide", "next step", "who owns this", "assign", "follow up", "timeline"]
+        },
+        "reference_answers": {
+          "white": "The facts: a new machine was installed, it needs a PIN, no PIN was shared, and there's now a daily 15-person line at 9am.",
+          "red": "People feel mildly frustrated and a little embarrassed standing in a pointless line before their first meeting.",
+          "black": "Risk: repeated small frustrations like this quietly erode morale and make people late to meetings, which compounds over weeks.",
+          "yellow": "On the upside, the line has accidentally become a nice 5-minute social moment between departments that rarely talk.",
+          "green": "Idea: put a QR code on the machine that reveals the PIN, or post it on the team chat pinned message instead of hiding it.",
+          "blue": "Decision: post the PIN today in the #office channel, and assign facilities to fix or bypass the PIN requirement by Friday."
+        }
+      },
+      {
+        "id": "se2",
+        "level": "easy",
+        "title": "The Dress Code That Confused Everyone",
+        "situation": "The company just switched from 'business casual' to 'dress for your day', and now half the office is unsure if jeans are fine, while the other half is showing up in full suits to a Tuesday standup.",
+        "keywords": {
+          "white": ["policy change", "wording", "unclear", "definition", "no examples given"],
+          "red": ["confused", "anxious", "uncomfortable", "self-conscious"],
+          "black": ["inconsistent", "unequal enforcement", "hr complaint", "unclear risk"],
+          "yellow": ["flexibility", "comfort", "personal expression", "trust employees"],
+          "green": ["examples doc", "photo guide", "poll", "themed casual day"],
+          "blue": ["clarify", "publish examples", "owner", "review in a month"]
+        },
+        "reference_answers": {
+          "white": "The policy changed from a specific rule to a vague one ('dress for your day') with zero examples provided.",
+          "red": "People feel a bit anxious about getting it 'wrong' in front of clients or managers.",
+          "black": "Risk: vague policies get enforced inconsistently, which can feel unfair and create quiet resentment.",
+          "yellow": "The flexible policy shows the company trusts employees to use good judgement, which many appreciate.",
+          "green": "Idea: publish a one-page visual guide with 3-4 real photo examples of 'client day' vs 'no-meeting day' looks.",
+          "blue": "Decision: HR publishes the example guide this week and revisits the policy after one month based on feedback."
+        }
+      },
+      {
+        "id": "se3",
+        "level": "easy",
+        "title": "The Birthday Slack Channel Chaos",
+        "situation": "Someone created a #birthdays channel to celebrate employees, but it's now flooded with 40 GIFs per birthday and people are muting the whole workspace notification bell because of it.",
+        "keywords": {
+          "white": ["channel created", "gif count", "muted", "notifications", "volume"],
+          "red": ["sweet gesture", "annoying", "overwhelmed", "guilt about muting"],
+          "black": ["notification fatigue", "important messages missed", "spam"],
+          "yellow": ["team spirit", "inclusion", "recognition", "warm culture"],
+          "green": ["digest format", "opt-in channel", "monthly summary", "bot limits gifs"],
+          "blue": ["set a rule", "channel guideline", "owner of channel", "review"]
+        },
+        "reference_answers": {
+          "white": "The #birthdays channel exists, generates around 40 reactions per birthday, and many people have muted it.",
+          "red": "It's a well-meant, warm gesture, but the sheer volume makes it feel like noise rather than celebration.",
+          "black": "Risk: if people mute the whole workspace to escape this channel, they may miss genuinely important announcements.",
+          "yellow": "At its core this celebrates people and builds a friendly, appreciative culture, which is valuable.",
+          "green": "Idea: cap it to a short daily digest bot message instead of live reactions, or make it opt-in.",
+          "blue": "Decision: set a simple channel guideline (one message per birthday, reactions instead of GIF replies) and assign an owner."
+        }
+      }
+    ],
+    "medium": [
+      {
+        "id": "sm1",
+        "level": "medium",
+        "title": "The Hybrid Schedule Standoff",
+        "situation": "Leadership wants everyone in the office 4 days a week starting next month. Engineering says productivity data shows no drop in remote output, while sales says in-person days doubled their deal-closing rate. HR has to propose one policy for the whole company.",
+        "keywords": {
+          "white": ["engineering data", "sales data", "productivity", "deal rate", "survey", "no drop"],
+          "red": ["resentment", "burnout", "commute stress", "excitement to reconnect"],
+          "black": ["attrition risk", "one size fits all", "resignation", "unfair to remote hires"],
+          "yellow": ["collaboration boost", "culture", "faster onboarding", "mentorship in person"],
+          "green": ["team-based policy", "role-based schedule", "core days only", "pilot per department"],
+          "blue": ["decide by department", "pilot first", "review after quarter", "communicate rationale"]
+        },
+        "reference_answers": {
+          "white": "Data shows engineering output is stable remotely, while sales' close rate roughly doubles with in-person days.",
+          "red": "There's real anxiety about commuting and burnout, alongside genuine excitement from some about reconnecting in person.",
+          "black": "A single blanket policy risks driving resignations in teams (like engineering) where the data doesn't support the mandate.",
+          "yellow": "In-person time clearly strengthens sales relationships and could speed up onboarding and mentorship company-wide.",
+          "green": "Idea: set schedule by function instead of company-wide — sales in-office 4 days, engineering in-office 2 core days.",
+          "blue": "Decision: adopt a role-based hybrid policy, pilot for one quarter, and review with both data sets before making it permanent."
+        }
+      },
+      {
+        "id": "sm2",
+        "level": "medium",
+        "title": "The Promotion Cycle Bottleneck",
+        "situation": "Managers submitted 30 promotion cases this cycle but the budget only allows for 12 approvals. Several strong candidates will be told 'not this cycle' for purely budget reasons, not performance reasons.",
+        "keywords": {
+          "white": ["30 cases", "12 slots", "budget cap", "performance ratings", "ratio"],
+          "red": ["unfair", "demoralizing", "guilt", "awkward conversations"],
+          "black": ["attrition of top talent", "trust erosion", "manager credibility hit"],
+          "yellow": ["clearer criteria", "transparency opportunity", "retention plan for the 18"],
+          "green": ["title change without pay increase", "stretch project track", "rolling mini-cycle"],
+          "blue": ["clear communication plan", "who talks to whom", "timeline", "criteria doc"]
+        },
+        "reference_answers": {
+          "white": "30 promotion cases were submitted against a budget for only 12, meaning 18 strong cases won't be approved this cycle.",
+          "red": "This will feel unfair and demoralizing to the 18 who did everything right but still hear 'not this time'.",
+          "black": "Risk: some of those 18 may quietly start job hunting, and managers may lose credibility for promises they can't keep.",
+          "yellow": "This is a chance to build clearer, more transparent promotion criteria that people can trust going forward.",
+          "green": "Idea: offer the 18 a 'fast-track' mini-cycle in 6 months instead of waiting a full year, plus a stretch-project track.",
+          "blue": "Decision: managers get a shared talking-points doc, deliver news within the same week, and HR announces the 6-month fast-track publicly."
+        }
+      },
+      {
+        "id": "sm3",
+        "level": "medium",
+        "title": "The Anonymous Feedback Tool Backfire",
+        "situation": "The company launched an anonymous feedback tool to surface concerns, but a few comments have turned into personal attacks on specific managers by name, and now some managers want the tool shut down entirely.",
+        "keywords": {
+          "white": ["tool launched", "few comments", "named managers", "anonymous", "usage stats"],
+          "red": ["managers hurt", "employees feel silenced if removed", "tension"],
+          "black": ["harassment risk", "legal exposure", "misuse", "chilling effect if shut down"],
+          "yellow": ["valuable signal", "early warning system", "psychological safety when used well"],
+          "green": ["moderation layer", "structured prompts instead of free text", "escalation path"],
+          "blue": ["set usage guidelines", "moderate", "decide keep or pause", "communicate rules"]
+        },
+        "reference_answers": {
+          "white": "The tool is live, most feedback is constructive, but a small number of anonymous comments named and attacked specific managers.",
+          "red": "Named managers understandably feel hurt and exposed, while employees fear losing their only safe outlet if it's shut down.",
+          "black": "Risk: unmoderated personal attacks could become a harassment or legal issue, but shutting the tool down entirely could silence legitimate concerns.",
+          "yellow": "Used well, this kind of tool is a genuinely valuable early-warning system for team health issues before they escalate.",
+          "green": "Idea: keep the tool but add structured prompts ('describe the situation, not the person') and a moderation step before comments are visible.",
+          "blue": "Decision: keep the tool live, add moderation and clear guidelines within two weeks, and communicate the change to all managers and staff."
+        }
+      }
+    ],
+    "hard": [
+      {
+        "id": "sh1",
+        "level": "hard",
+        "title": "The AI Resume Screener Controversy",
+        "situation": "HR quietly deployed an AI resume-screening tool six months ago to handle a flood of applications. A journalist is now asking questions after data suggests the tool rejects candidates from certain universities and zip codes at a noticeably higher rate. Legal, PR, and hiring managers are all waiting on HR's response by end of day.",
+        "keywords": {
+          "white": ["six months", "rejection rate", "zip code", "university", "journalist", "data pattern"],
+          "red": ["fear", "reputational anxiety", "guilt", "defensive", "employees worried"],
+          "black": ["discrimination lawsuit", "pr disaster", "regulatory risk", "trust collapse"],
+          "yellow": ["chance to lead on fairness", "fix builds trust", "industry example"],
+          "green": ["third-party audit", "human review layer", "publish transparency report", "bias bounty"],
+          "blue": ["pause tool", "audit timeline", "single spokesperson", "response by end of day"]
+        },
+        "reference_answers": {
+          "white": "The tool has run for six months, and current data shows a statistically higher rejection rate for certain universities and zip codes, which a journalist has flagged.",
+          "red": "There's real fear internally — of reputational damage, of having unintentionally caused harm, and of how this looks publicly.",
+          "black": "This carries serious risk: potential discrimination claims, regulatory scrutiny, and a public trust collapse if handled defensively.",
+          "yellow": "Handled transparently, this is also a chance to become a credible example of a company that catches and fixes AI bias responsibly.",
+          "green": "Idea: commission an independent bias audit, add a mandatory human review step for borderline rejections, and publish a short transparency report.",
+          "blue": "Decision: pause the automated auto-reject feature immediately, name one spokesperson for all inquiries, and commit publicly to an audit with a set deadline."
+        }
+      },
+      {
+        "id": "sh2",
+        "level": "hard",
+        "title": "The Whistleblower and the Star Performer",
+        "situation": "An anonymous complaint alleges that the company's top-performing sales director has been pressuring junior staff into unpaid overtime and has made several employees uncomfortable in one-on-ones. He also happens to be closing 30% of company revenue. The investigation is not yet complete, but two more employees have come forward this week.",
+        "keywords": {
+          "white": ["30% of revenue", "anonymous complaint", "two more employees", "investigation ongoing", "unpaid overtime"],
+          "red": ["fear of retaliation", "distrust", "protective of victims", "anxiety about revenue impact"],
+          "black": ["legal liability", "culture damage if ignored", "revenue hit if he leaves", "credibility loss"],
+          "yellow": ["chance to show values over revenue", "stronger culture long term", "trust rebuilt"],
+          "green": ["independent investigator", "interim revenue coverage plan", "confidential support line"],
+          "blue": ["due process", "protect complainants", "decision timeline", "who decides what"]
+        },
+        "reference_answers": {
+          "white": "There is one anonymous complaint, now two additional employees corroborating it this week, an ongoing unfinished investigation, and this director drives roughly 30% of revenue.",
+          "red": "There's fear of retaliation among staff, and real tension between protecting people and anxiety about financial fallout.",
+          "black": "Ignoring or downplaying this risks serious legal liability and lasting culture damage; acting on it risks a real revenue hit, but that risk shouldn't drive the decision.",
+          "yellow": "Handling this decisively, regardless of his performance, is a genuine opportunity to prove the company's values are real, which builds long-term trust.",
+          "green": "Idea: bring in an independent, external investigator to remove any conflict of interest, and quietly prepare an interim revenue-coverage plan so the business decision doesn't influence the people decision.",
+          "blue": "Decision: complete the independent investigation on a firm two-week timeline, protect all complainants from any retaliation immediately, and separate the performance question entirely from the conduct question."
+        }
+      },
+      {
+        "id": "sh3",
+        "level": "hard",
+        "title": "The Layoff Announcement Leak",
+        "situation": "A confidential slide deck outlining a 15% workforce reduction has leaked internally two days before the planned announcement. Rumors are spreading faster than facts, some employees are already updating their resumes publicly on LinkedIn, and the leadership team is asking HR whether to announce early, deny everything, or stay silent until the original date.",
+        "keywords": {
+          "white": ["leak", "15%", "two days early", "linkedin activity", "rumor spread"],
+          "red": ["panic", "betrayal", "anxiety", "distrust of leadership"],
+          "black": ["denial backfires", "trust destroyed if lied to", "chaotic uncontrolled rollout"],
+          "yellow": ["chance to control narrative early", "show respect by moving fast", "transparency wins trust"],
+          "green": ["move the announcement up", "direct manager briefings first", "dedicated hr support line"],
+          "blue": ["decide today", "who informs whom in what order", "single message", "timeline compression"]
+        },
+        "reference_answers": {
+          "white": "A confidential deck describing a 15% reduction leaked two days before the planned date, and rumors plus public LinkedIn activity are already spreading.",
+          "red": "Employees are panicking and many feel betrayed, and trust in leadership is dropping fast with every hour of silence.",
+          "black": "Denying it outright would very likely backfire once the truth comes out, permanently damaging leadership's credibility.",
+          "yellow": "Moving the announcement up shows respect for employees and can let the company control the narrative instead of the rumor mill.",
+          "green": "Idea: compress the timeline to brief managers today with talking points, then announce company-wide tomorrow instead of waiting two more days.",
+          "blue": "Decision: move the announcement up to tomorrow, brief all managers first in a locked session today, and issue one single company-wide message with clear next steps."
+        }
+      }
+    ]
+  }
+}
