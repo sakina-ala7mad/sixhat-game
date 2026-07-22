@@ -2,40 +2,40 @@
   "hats": {
     "white": {
       "name": "White Hat",
-      "focus": "Facts & Information",
-      "description": "Neutral and objective. Only what we know, what we don't know, and what data says.",
+      "focus": "Factual Thinking",
+      "description": "Neutral and objective. Only what we know, what we don't know, and what data says,\n Gathers relevant data and identifies missing information.",
       "example": "Our exit-interview data shows 40% of resignations happen in the first 90 days.",
       "color_hex": "#F5F5F0",
       "icon": "🤍"
     },
     "red": {
       "name": "Red Hat",
-      "focus": "Feelings & Intuition",
-      "description": "Emotions, gut reactions, and hunches — no justification needed.",
+      "focus": "Emotional Thinking",
+      "description": "Emotions, gut reactions, and hunches — no justification needed, \n Surfaces gut feelings, concerns.",
       "example": "Honestly, this new attendance policy just feels punishing, even before I see the numbers.",
       "color_hex": "#E53935",
       "icon": "❤️"
     },
     "black": {
       "name": "Black Hat",
-      "focus": "Caution & Risks",
-      "description": "Critical judgement. What could go wrong, what's weak, what's risky.",
+      "focus": "Critical Thinking",
+      "description": "Critical judgement. What could go wrong, what's weak, what's risky,\n Highlights risks, pitfalls, and potential failures.",
       "example": "If we roll this out company-wide without a pilot, we could get a wave of formal complaints.",
       "color_hex": "#212121",
       "icon": "🖤"
     },
     "yellow": {
       "name": "Yellow Hat",
-      "focus": "Optimism & Benefits",
-      "description": "Value, benefits, and why an idea could genuinely work.",
+      "focus": "Positive Thinking",
+      "description": "Value, benefits, and why an idea could genuinely work,\n dentifies benefits and opportunities.",
       "example": "This could cut onboarding time in half and make new hires productive by week two.",
       "color_hex": "#FDD835",
       "icon": "💛"
     },
     "green": {
       "name": "Green Hat",
-      "focus": "Creativity & Alternatives",
-      "description": "New ideas, alternatives, provocations. 'What if' thinking.",
+      "focus": "Creative Thinking",
+      "description": "New ideas, alternatives, provocations. 'What if' thinking,\n Generates novel ideas, possibilities, and unconventional angles.",
       "example": "What if new hires picked their own onboarding buddy instead of us assigning one?",
       "color_hex": "#43A047",
       "icon": "💚"
