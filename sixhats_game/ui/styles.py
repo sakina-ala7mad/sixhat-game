@@ -136,9 +136,31 @@ def inject(theme: str):
             font-weight: 700 !important;
             border: none !important;
             box-shadow: var(--shadow);
-            transition: transform 0.15s ease;
+            transition: all 0.15s ease;
         }}
+        
         .stButton>button:hover {{ transform: translateY(-2px); }}
+
+        /* Replace Streamlit's default bold red "primary" button with our
+           soft accent color, and give "secondary" buttons a gentle outline
+           instead of a plain grey box -- this is what fixes harsh red CTAs. */
+        button[kind="primary"], [data-testid="stBaseButton-primary"] {{
+            background: linear-gradient(135deg, var(--accent), var(--accent-2)) !important;
+            color: #ffffff !important;
+            border: none !important;
+        }}
+        button[kind="primary"]:hover, [data-testid="stBaseButton-primary"]:hover {{
+            filter: brightness(1.06);
+        }}
+        button[kind="secondary"], [data-testid="stBaseButton-secondary"] {{
+            background: var(--bg-card) !important;
+            color: var(--text) !important;
+            border: 1.5px solid var(--accent) !important;
+        }}
+        button[kind="secondary"]:hover, [data-testid="stBaseButton-secondary"]:hover {{
+            background: var(--accent) !important;
+            color: #ffffff !important;
+        }}
 
         .sh-hatbtn button {{
             font-size: 1.6rem !important;
