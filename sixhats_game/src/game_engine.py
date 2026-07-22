@@ -76,6 +76,9 @@ def is_first_submitter(session_id: str) -> bool:
     players = db.get_session_players(session_id)
     return not any(p["submitted"] for p in players)
 
+def auto_submit_timeout(session_id: str, scenario: dict, skip_name_key: str | None = None):
+    ...
+
 
 def maybe_finish_session(session_id: str):
     """A round ends when every non-departed player has submitted, or when
