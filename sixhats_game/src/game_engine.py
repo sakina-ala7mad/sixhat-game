@@ -11,9 +11,9 @@ with streamlit-autorefresh polling in app.py.
 import json
 import time
 
-from core import database as db
-from core import hats as hats_module
-from core import xp_engine
+from src import database as db
+from src import hats as hats_module
+from src import xp_engine
 
 
 # ------------------------------------------------------------- creation ---
