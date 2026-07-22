@@ -14,6 +14,7 @@ import time
 from src import database as db
 from src import hats as hats_module
 from src import xp_engine
+from . import evaluator
 
 
 # ------------------------------------------------------------- creation ---
