@@ -99,6 +99,26 @@ def render_tutorial(first_time=True):
 
 
 # ================================================================ HOME =====
+
+def _button_select(label: str, options: list[str], state_key: str) -> str:
+    """A row of real clickable buttons acting as a single-select control
+    (replaces st.radio). The current choice is remembered in
+    st.session_state[state_key] across reruns; the selected option is shown
+    as a solid/primary button, the rest as outlined/secondary buttons."""
+    if state_key not in st.session_state:
+        st.session_state[state_key] = options[0]
+    st.markdown(f"<div class='sh-soft' style='margin-bottom:0.3rem;'>{label}</div>", unsafe_allow_html=True)
+    cols = st.columns(len(options))
+    for i, opt in enumerate(options):
+        selected = st.session_state[state_key] == opt
+        with cols[i]:
+            if st.button(opt, key=f"{state_key}_btn_{opt}",
+                         type="primary" if selected else "secondary",
+                         use_container_width=True):
+                st.session_state[state_key] = opt
+                st.rerun()
+    return st.session_state[state_key]
+#----------------------
 def render_home():
     user = st.session_state.user
     urow = db.get_user(user["display_name"])
@@ -107,7 +127,7 @@ def render_home():
     comp.render_xp_bar(urow["total_xp"])
     st.write("")
 
-    scope = st.radio("Play as", ["Individual", "Team"], horizontal=True, key="home_scope")
+    scope = _button_select("Play as", ["Individual", "Team"], "home_scope")
 
     if scope == "Team":
         _render_team_picker()
@@ -128,7 +148,7 @@ def render_home():
                 _goto("lobby", session_id=existing["session_id"])
             return
 
-        mode = st.radio("Mode", ["Scenario (team discussion)", "Puzzle (quick-fire)"], key="home_mode")
+        mode = _button_select("Mode", ["Scenario (team discussion)", "Puzzle (quick-fire)"], "home_mode")
         level = st.select_slider("Difficulty", ["easy", "medium", "hard"], key="home_level")
 
         # Any team member can create the game; whoever creates it becomes host.
@@ -149,7 +169,7 @@ def render_home():
             st.rerun()
 
     else:
-        mode = st.radio("Mode", ["Scenario (solo)", "Puzzle (quick-fire)"], key="home_mode_i")
+        mode = _button_select("Mode", ["Scenario (solo)", "Puzzle (quick-fire)"], "home_mode_i")
         level = st.select_slider("Difficulty", ["easy", "medium", "hard"], key="home_level_i")
         if st.button("▶️ Start", type="primary", use_container_width=True):
             m = "scenario" if mode.startswith("Scenario") else "puzzle"
