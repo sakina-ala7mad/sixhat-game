@@ -10,6 +10,7 @@ correctly across multiple browser tabs polling in parallel.
 import json
 import time
 import streamlit as st
+import streamlit.components.v1 as components
 
 from src import database as db
 from src import hats as hats_module
@@ -17,6 +18,7 @@ from src import xp_engine
 from src import evaluator
 from src import game_engine as ge
 from ui import components as comp
+from ui import tutorial_content
 
 PUZZLE_QUESTIONS_PER_ROUND = 5
 PUZZLE_SECONDS_PER_QUESTION = 180  # 3 minutes -- test value, tune down later (e.g. 15-30s)
@@ -65,14 +67,7 @@ def render_login():
 # ============================================================ TUTORIAL ====
 def render_tutorial(first_time=True):
     st.markdown("<div class='sh-title'>🎓 How Six Hats Thinking Works</div>", unsafe_allow_html=True)
-    st.markdown(
-        "<div class='sh-soft'>Edward de Bono's Six Thinking Hats is a way for a group to look at "
-        "one problem from six deliberately different angles — one at a time — instead of everyone "
-        "arguing from a different angle at once.</div>", unsafe_allow_html=True,
-    )
-    st.write("")
-    for hat in hats_module.HAT_ORDER:
-        comp.hat_role_card(hat)
+    components.html(tutorial_content.TUTORIAL_HTML, height=900, scrolling=True)
 
     st.markdown(
         "<div class='sh-card'>"
