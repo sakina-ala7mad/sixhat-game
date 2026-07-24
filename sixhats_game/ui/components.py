@@ -28,6 +28,16 @@ HAT_PASTEL = {
     "blue":   {"bg": "#DFEBFB", "text": "#1A4971"},   # ~7.8:1
 }
 
+# One-word reminder of what each hat means, shown under its button in
+# Puzzle mode so players don't have to recall the tutorial from memory.
+HAT_SHORT_WORD = {
+    "white": "Factual",
+    "red": "Emotional",
+    "black": "Critical",
+    "yellow": "Optimistic",
+    "green": "Creative",
+    "blue": "Control",
+}
 
 def _dim(hex_color: str) -> str:
     """Return a darker/greyed version of a hat color for 'not joined yet' faces."""
@@ -97,18 +107,26 @@ def render_lobby_slots(member_names: list[str], max_slots=6):
 
 
 def render_hat_answer_buttons(question_key: str, disabled=False):
-    """Renders 6 colored hat buttons instead of a dropdown.
-    Returns the hat color that was clicked this run, or None."""
+    """Renders 6 colored hat buttons instead of a dropdown, each labeled with
+    a one-word reminder of what that hat means. Returns the hat color that
+    was clicked this run, or None."""
     chosen = None
     cols = st.columns(6)
     for i, hat in enumerate(["white", "red", "black", "yellow", "green", "blue"]):
         meta = HATS[hat]
+        pastel = HAT_PASTEL[hat]
         with cols[i]:
-            st.markdown(f"<div class='sh-hatbtn'>", unsafe_allow_html=True)
-            label = f"{meta['icon']}\n{meta['name'].replace(' Hat','')}"
+            st.markdown(
+                f"""<div class='sh-hatbtn' style="background:{pastel['bg']}; border-radius:16px;
+                       padding:0.5rem 0.3rem 0.2rem; text-align:center;">
+                    <div style="font-size:0.72rem; font-weight:700; color:{pastel['text']};
+                                margin-bottom:0.3rem;">{HAT_SHORT_WORD[hat]}</div>
+                </div>""",
+                unsafe_allow_html=True,
+            )
+            label = f"{meta['icon']} {meta['name'].replace(' Hat','')}"
             if st.button(label, key=f"{question_key}_{hat}", disabled=disabled, use_container_width=True):
                 chosen = hat
-            st.markdown("</div>", unsafe_allow_html=True)
     return chosen
 
 
