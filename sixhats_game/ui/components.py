@@ -116,6 +116,10 @@ def render_hat_answer_buttons(question_key: str, disabled=False):
         meta = HATS[hat]
         pastel = HAT_PASTEL[hat]
         with cols[i]:
+            label = f"{meta['icon']} {meta['name'].replace(' Hat','')}"
+            if st.button(label, key=f"{question_key}_{hat}", disabled=disabled, use_container_width=True):
+                chosen = hat
+            # Short word shown BELOW the button instead of above it
             st.markdown(
                 f"""<div class='sh-hatbtn' style="background:{pastel['bg']}; border-radius:16px;
                        padding:0.5rem 0.3rem 0.2rem; text-align:center;">
@@ -124,9 +128,6 @@ def render_hat_answer_buttons(question_key: str, disabled=False):
                 </div>""",
                 unsafe_allow_html=True,
             )
-            label = f"{meta['icon']} {meta['name'].replace(' Hat','')}"
-            if st.button(label, key=f"{question_key}_{hat}", disabled=disabled, use_container_width=True):
-                chosen = hat
     return chosen
 
 
