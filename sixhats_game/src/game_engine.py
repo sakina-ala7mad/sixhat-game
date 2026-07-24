@@ -11,10 +11,10 @@ with streamlit-autorefresh polling in app.py.
 import json
 import time
 
-from src import database as db
-from src import hats as hats_module
-from src import xp_engine
-from . import evaluator
+from core import database as db
+from core import hats as hats_module
+from core import xp_engine
+from core import evaluator
 
 
 # ------------------------------------------------------------- creation ---
@@ -76,6 +76,7 @@ def round_expired(session) -> bool:
 def is_first_submitter(session_id: str) -> bool:
     players = db.get_session_players(session_id)
     return not any(p["submitted"] for p in players)
+
 
 def auto_submit_timeout(session_id: str, scenario: dict, skip_name_key: str | None = None):
     """Called once the round timer hits 0. Any player who hasn't submitted yet

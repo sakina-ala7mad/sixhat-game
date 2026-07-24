@@ -7,8 +7,8 @@ Small, reusable render helpers used across every screen: the colored
 """
 
 import streamlit as st
-from src.hats import HATS
-from src import xp_engine
+from core.hats import HATS
+from core import xp_engine
 
 FACE_ON = "😊"
 FACE_SUBMITTED = "😄"
@@ -20,12 +20,12 @@ FACE_OFF = "💤"
 # light pastel look in both dark and light mode so the hat identity reads
 # the same either way).
 HAT_PASTEL = {
-    "white":  {"bg": "#F6F5F1", "text": "#2E2E2E"},   # ~12.4:1
-    "red":    {"bg": "#FBE0DF", "text": "#7A2320"},   # ~8.1:1
-    "black":  {"bg": "#E7E7EA", "text": "#2A2A2A"},   # ~11.6:1
-    "yellow": {"bg": "#FFF6D2", "text": "#5A4A00"},   # ~8.0:1
-    "green":  {"bg": "#DFF3E3", "text": "#1F5C33"},   # ~6.9:1
-    "blue":   {"bg": "#DFEBFB", "text": "#1A4971"},   # ~7.8:1
+    "white":  {"bg": "#F6F5F1", "text": "#2E2E2E"},   # ~12:1
+    "red":    {"bg": "#FBE0DF", "text": "#7A2320"},   # ~6.8:1
+    "black":  {"bg": "#E7E7EA", "text": "#2A2A2A"},   # ~11:1
+    "yellow": {"bg": "#FFF6D2", "text": "#5A4A00"},   # ~5.6:1
+    "green":  {"bg": "#DFF3E3", "text": "#1F5C33"},   # ~6.2:1
+    "blue":   {"bg": "#DFEBFB", "text": "#1A4971"},   # ~7:1
 }
 
 # One-word reminder of what each hat means, shown under its button in
@@ -38,6 +38,7 @@ HAT_SHORT_WORD = {
     "green": "Creative",
     "blue": "Control",
 }
+
 
 def _dim(hex_color: str) -> str:
     """Return a darker/greyed version of a hat color for 'not joined yet' faces."""
@@ -116,10 +117,6 @@ def render_hat_answer_buttons(question_key: str, disabled=False):
         meta = HATS[hat]
         pastel = HAT_PASTEL[hat]
         with cols[i]:
-            label = f"{meta['icon']} {meta['name'].replace(' Hat','')}"
-            if st.button(label, key=f"{question_key}_{hat}", disabled=disabled, use_container_width=True):
-                chosen = hat
-            # Short word shown BELOW the button instead of above it
             st.markdown(
                 f"""<div class='sh-hatbtn' style="background:{pastel['bg']}; border-radius:16px;
                        padding:0.5rem 0.3rem 0.2rem; text-align:center;">
@@ -128,6 +125,9 @@ def render_hat_answer_buttons(question_key: str, disabled=False):
                 </div>""",
                 unsafe_allow_html=True,
             )
+            label = f"{meta['icon']} {meta['name'].replace(' Hat','')}"
+            if st.button(label, key=f"{question_key}_{hat}", disabled=disabled, use_container_width=True):
+                chosen = hat
     return chosen
 
 

@@ -12,11 +12,11 @@ import time
 import streamlit as st
 import streamlit.components.v1 as components
 
-from src import database as db
-from src import hats as hats_module
-from src import xp_engine
-from src import evaluator
-from src import game_engine as ge
+from core import database as db
+from core import hats as hats_module
+from core import xp_engine
+from core import evaluator
+from core import game_engine as ge
 from ui import components as comp
 from ui import tutorial_content
 
@@ -34,7 +34,7 @@ def _goto(screen, **extra):
 
 # ============================================================== LOGIN =====
 def render_login():
-    st.markdown("<div class='sh-title' style='font-size:2rem;'>🎩 Six Hats Arena</div>", unsafe_allow_html=True)
+    st.markdown("<div class='sh-title' style='font-size:2rem;'><span class='sh-bounce'>🎩</span> Six Hats Arena</div>", unsafe_allow_html=True)
     st.markdown(
         "<div class='sh-soft'>Sharpen how your team thinks, decides, and communicates — "
         "one hat at a time.</div>", unsafe_allow_html=True,
@@ -93,8 +93,6 @@ def render_tutorial(first_time=True):
             _goto(st.session_state.get("_return_screen", "home"))
 
 
-# ================================================================ HOME =====
-
 def _button_select(label: str, options: list[str], state_key: str) -> str:
     """A row of real clickable buttons acting as a single-select control
     (replaces st.radio). The current choice is remembered in
@@ -113,12 +111,14 @@ def _button_select(label: str, options: list[str], state_key: str) -> str:
                 st.session_state[state_key] = opt
                 st.rerun()
     return st.session_state[state_key]
-#----------------------
+
+
+# ================================================================ HOME =====
 def render_home():
     user = st.session_state.user
     urow = db.get_user(user["display_name"])
 
-    st.markdown(f"<div class='sh-title'>Welcome back, {user['display_name']} 👋</div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='sh-title'>Welcome back, {user['display_name']} <span class='sh-bounce'>👋</span></div>", unsafe_allow_html=True)
     comp.render_xp_bar(urow["total_xp"])
     st.write("")
 
