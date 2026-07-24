@@ -7,8 +7,8 @@ Small, reusable render helpers used across every screen: the colored
 """
 
 import streamlit as st
-from core.hats import HATS
-from core import xp_engine
+from src.hats import HATS
+from src import xp_engine
 
 FACE_ON = "😊"
 FACE_SUBMITTED = "😄"
