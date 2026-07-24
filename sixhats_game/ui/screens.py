@@ -19,7 +19,7 @@ from src import game_engine as ge
 from ui import components as comp
 
 PUZZLE_QUESTIONS_PER_ROUND = 5
-PUZZLE_SECONDS_PER_QUESTION = 15
+PUZZLE_SECONDS_PER_QUESTION = 180  # 3 minutes -- test value, tune down later (e.g. 15-30s)
 SCENARIO_ROUND_SECONDS = 120
 
 
