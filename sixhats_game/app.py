@@ -39,9 +39,9 @@ with top_r:
 
 # Live screens get a fast heartbeat so teammates see each other instantly
 # without anyone hitting refresh. Static screens don't need it.
-LIVE_SCREENS = {"lobby"}
+LIVE_SCREENS = {"lobby", "puzzle"}
 if st.session_state.screen in LIVE_SCREENS:
-    st_autorefresh(interval=1500, key="heartbeat")
+    st_autorefresh(interval=1000, key="heartbeat")
 
 # ----------------------------------------------------------- guard rails --
 if st.session_state.screen != "login" and not st.session_state.user:
