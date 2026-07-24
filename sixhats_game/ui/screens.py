@@ -12,11 +12,11 @@ import time
 import streamlit as st
 import streamlit.components.v1 as components
 
-from core import database as db
-from core import hats as hats_module
-from core import xp_engine
-from core import evaluator
-from core import game_engine as ge
+from src import database as db
+from src import hats as hats_module
+from src import xp_engine
+from src import evaluator
+from src import game_engine as ge
 from ui import components as comp
 from ui import tutorial_content
 
