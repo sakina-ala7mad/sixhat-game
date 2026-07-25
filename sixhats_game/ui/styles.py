@@ -183,7 +183,7 @@ def inject(theme: str):
         .stButton>button:active {{ transform: translateY(1px); }}
 
         button[kind="primary"], [data-testid="stBaseButton-primary"] {{
-            background: linear-gradient(135deg, var(--accent), var(--accent-2)) !important;
+            background: var(--accent) !important;
             color: #ffffff !important;
             border: none !important;
             box-shadow: 0 5px 0 rgba(0,0,0,0.30) !important;
@@ -209,6 +209,48 @@ def inject(theme: str):
         }}
         button[kind="secondary"]:active, [data-testid="stBaseButton-secondary"]:active {{
             box-shadow: 0 1px 0 var(--border) !important;
+        }}
+
+        /* Start/Create actions -> green. Leave actions -> red. */
+        .st-key-start_solo_btn button, .st-key-create_team_btn button,
+        .st-key-start_round_btn button {{
+            background: #3FBE78 !important;
+            border: none !important;
+            color: #ffffff !important;
+            box-shadow: 0 5px 0 #2C8F59 !important;
+        }}
+        .st-key-start_solo_btn button:active, .st-key-create_team_btn button:active,
+        .st-key-start_round_btn button:active {{
+            box-shadow: 0 2px 0 #2C8F59 !important;
+        }}
+
+        .st-key-leave_team_btn button, .st-key-leave_round_btn button,
+        .st-key-leave_lobby_btn button {{
+            background: #FF5C5C !important;
+            border: none !important;
+            color: #ffffff !important;
+            box-shadow: 0 5px 0 #B23A3A !important;
+        }}
+        .st-key-leave_team_btn button:active, .st-key-leave_round_btn button:active,
+        .st-key-leave_lobby_btn button:active {{
+            box-shadow: 0 2px 0 #B23A3A !important;
+        }}
+
+        .sh-section {{
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 18px;
+            padding: 0.9rem 1.1rem 0.6rem;
+            margin-bottom: 1rem;
+        }}
+        .sh-section-label {{
+            font-family: 'Baloo 2', sans-serif;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text-soft) !important;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
         }}
 
         /* hat-color answer buttons get a little extra wobble on hover, like
