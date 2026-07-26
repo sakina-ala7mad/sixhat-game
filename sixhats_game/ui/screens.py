@@ -304,7 +304,6 @@ def render_lobby():
 
     is_team = session["scope"] == "team"
     if is_team:
-        ge.sync_team_session_players(session_id, session["team_key"])
         team = db.get_team(session["team_key"])
         st.markdown(f"<div class='sh-title'>🎭 {team['display_name']} — Scenario Round</div>", unsafe_allow_html=True)
     else:
@@ -313,6 +312,7 @@ def render_lobby():
     players = db.get_session_players(session_id)
     active_players = [p for p in players if not p["left_game"]]
     is_host = db.name_key(session["host_name"] or "") == user["name_key"]
+    already_joined = any(p["name_key"] == user["name_key"] for p in active_players)
 
     if session["status"] == "lobby":
         st.markdown(f"<span class='sh-pill'>Level: {session['level'].title()}</span>", unsafe_allow_html=True)
@@ -326,13 +326,24 @@ def render_lobby():
         if is_team:
             st.info(f"Team join ID: **{team['team_id']}** — teammates can join anytime, the host doesn't need "
                     f"to wait for a full team.")
+
+        if is_team and not is_host and not already_joined:
+            st.markdown("<div class='sh-soft' style='text-align:center;'>You're on this team, but not in "
+                        "this round yet.</div>", unsafe_allow_html=True)
+            if st.button("🎯 Choose team scenario play", key="join_round_btn", type="primary",
+                         use_container_width=True):
+                ge.join_scenario_round(session_id, user["display_name"])
+                st.rerun()
+
         if is_host:
             if st.button("▶️ Start round", key="start_round_btn", use_container_width=True):
                 ge.begin_round(session_id, "scenario", session["level"])
                 st.rerun()
         else:
-            st.info("Waiting for the host to start the round…")
+            if already_joined:
+                st.info("Waiting for the host to start the round…")
             st.button("🔄 Refresh", use_container_width=True)
+
         if st.button("🚪 Leave", key="leave_lobby_btn", use_container_width=True):
             ge.player_leaves(session_id, user["display_name"])
             if is_team:
@@ -342,8 +353,17 @@ def render_lobby():
         return
 
     # ----- active or finished -----
-    scenario = hats_module.get_scenario_by_id(session["level"], session["scenario_id"])
     my_row = next((p for p in players if p["name_key"] == user["name_key"]), None)
+
+    # Heartbeat: proves this player is still here, reaps anyone stale, and
+    # auto-ends the round if nobody real is left in it.
+    if my_row and not my_row["left_game"]:
+        ge.refresh_presence(session_id, user["display_name"])
+        session = db.get_session(session_id)     # re-read: refresh_presence may have just finished it
+        players = db.get_session_players(session_id)
+        my_row = next((p for p in players if p["name_key"] == user["name_key"]), None)
+
+    scenario = hats_module.get_scenario_by_id(session["level"], session["scenario_id"])
     my_hat = my_row["hat_color"] if my_row else None
     try:
         active_hats = json.loads(session["active_hats"]) if session["active_hats"] else []
@@ -376,7 +396,6 @@ def render_lobby():
     )
 
     if ge.round_expired(session):
-        my_row = next((p for p in players if p["name_key"] == user["name_key"]), None)
         if my_row and my_row["hat_color"] and not my_row["submitted"] and not my_row["left_game"]:
             draft_answer = st.session_state.get(f"answer_{session_id}", "")
             is_first = ge.is_first_submitter(session_id)
@@ -517,9 +536,34 @@ def render_puzzle():
         }
     pz = st.session_state.puzzle
 
+    # ---- pause / end game (leave) ----
+    if st.session_state.get("confirm_leave_puzzle"):
+        st.warning("⚠️ Leaving now ends this round early and reduces your score. Are you sure?")
+        lc1, lc2 = st.columns(2)
+        if lc1.button("✅ Yes, leave", key="confirm_leave_yes", type="primary", use_container_width=True):
+            penalty = min(PUZZLE_LEAVE_PENALTY, max(pz["score"], 0))
+            if scope == "team" and st.session_state.get("team_key"):
+                db.add_team_xp(st.session_state.team_key, -penalty)
+                for m in db.get_team_members(st.session_state.team_key):
+                    db.add_user_xp(m["display_name"], -penalty, individual=False)
+            else:
+                db.add_user_xp(user["display_name"], -penalty, individual=True)
+            pz["score"] -= penalty
+            pz["left_early"] = True
+            st.session_state["confirm_leave_puzzle"] = False
+            _goto("puzzle_results")
+        if lc2.button("❌ Cancel, keep playing", key="confirm_leave_no", use_container_width=True):
+            st.session_state["confirm_leave_puzzle"] = False
+            st.rerun()
+        return
+
     st.markdown(f"<div class='sh-title'>🧩 Puzzle Mode — {level.title()}</div>", unsafe_allow_html=True)
     st.markdown(f"<div class='sh-soft'>Question {pz['idx'] + 1} of {PUZZLE_QUESTIONS_PER_ROUND} "
                 f"&nbsp;·&nbsp; scope: {scope}</div>", unsafe_allow_html=True)
+
+    if st.button("⏸ Pause / end game", key="leave_puzzle_btn"):
+        st.session_state["confirm_leave_puzzle"] = True
+        st.rerun()
 
     elapsed = time.time() - pz["q_start"]
     left = max(0, PUZZLE_SECONDS_PER_QUESTION - elapsed)
@@ -529,6 +573,21 @@ def render_puzzle():
     st.markdown(f"<div class='sh-card'>“{q['text']}”</div>", unsafe_allow_html=True)
 
     answered_key = f"answered_{pz['idx']}"
+
+    # Timer ran out with no answer -- auto-submit as a miss.
+    if left <= 0 and not st.session_state.get(answered_key):
+        xp = xp_engine.puzzle_xp(level, False, 0)
+        if scope == "team" and st.session_state.get("team_key"):
+            db.add_team_xp(st.session_state.team_key, xp)
+            for m in db.get_team_members(st.session_state.team_key):
+                db.add_user_xp(m["display_name"], xp, individual=False)
+        else:
+            db.add_user_xp(user["display_name"], xp, individual=True)
+        pz["score"] += xp
+        pz["log"].append({"question": q, "chosen": None, "correct": False, "xp": xp, "timed_out": True})
+        pz["exclude"].add(q["id"])
+        st.session_state[answered_key] = True
+
     if not st.session_state.get(answered_key):
         chosen = comp.render_hat_answer_buttons(f"pz_{pz['idx']}")
         if chosen:
@@ -547,7 +606,9 @@ def render_puzzle():
             st.rerun()
     else:
         last = pz["log"][-1]
-        if last["correct"]:
+        if last.get("timed_out"):
+            st.error(f"⏰ Time's up! The correct hat was {hats_module.HATS[q['hat']]['name']}. {last['xp']} xp")
+        elif last["correct"]:
             st.success(f"✅ Correct! It was the {hats_module.HATS[q['hat']]['name']}. +{last['xp']} xp")
         else:
             st.error(f"❌ Not quite — the correct hat was {hats_module.HATS[q['hat']]['name']}. {last['xp']} xp")
@@ -566,6 +627,8 @@ def render_puzzle():
 def render_puzzle_results():
     pz = st.session_state.get("puzzle", {"log": [], "score": 0})
     st.markdown("<div class='sh-title'>🧩 Round recap</div>", unsafe_allow_html=True)
+    if pz.get("left_early"):
+        st.warning(f"You left this round early — a {PUZZLE_LEAVE_PENALTY} xp penalty was applied.")
     st.markdown(f"<div class='sh-card'>Total this round: <b>{pz['score']} xp</b></div>", unsafe_allow_html=True)
     for i, item in enumerate(pz["log"]):
         q = item["question"]
