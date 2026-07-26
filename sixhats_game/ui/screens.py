@@ -3,7 +3,7 @@ ui/screens.py
 -------------
 One render_xxx() function per screen. app.py just calls whichever one
 matches st.session_state.screen. All game state is re-read from the DB
-every single call (via core.database / core.game_engine) so this works
+every single call (via src.database / src.game_engine) so this works
 correctly across multiple browser tabs polling in parallel.
 """
 
@@ -35,7 +35,7 @@ def _goto(screen, **extra):
 
 # ============================================================== LOGIN =====
 def render_login():
-    st.markdown("<div class='sh-title' style='font-size:2rem;'><span class='sh-bounce'>🎩</span> Six Hats </div>", unsafe_allow_html=True)
+    st.markdown("<div class='sh-title' style='font-size:2rem;'><span class='sh-bounce'>🎩</span> Six Hats</div>", unsafe_allow_html=True)
     st.markdown(
         "<div class='sh-soft'>Sharpen how your team thinks, decides, and communicates — "
         "one hat at a time.</div>", unsafe_allow_html=True,
@@ -96,10 +96,11 @@ def render_tutorial(first_time=True):
 
 def _button_select(label: str, options: list[str], state_key: str) -> str:
     """A row of real clickable buttons acting as a single-select control
-    (replaces st.radio). The current choice is remembered in
-    st.session_state[state_key] across reruns; the selected option is shown
-    as a solid/primary button, the rest as outlined/secondary buttons."""
-    
+    (replaces st.radio / st.select_slider). The current choice is remembered
+    in st.session_state[state_key] across reruns; the selected option is
+    shown as a solid/primary button, the rest as outlined/secondary buttons.
+    The whole control is wrapped in a bordered "section" frame so each
+    control (Play as / Mode / Difficulty) reads as its own distinct group."""
     if state_key not in st.session_state:
         st.session_state[state_key] = options[0]
     st.markdown(f"<div class='sh-section'><div class='sh-section-label'>{label}</div>", unsafe_allow_html=True)
@@ -148,6 +149,10 @@ def render_home():
 
         mode = _button_select("Mode", ["Scenario (team discussion)", "Puzzle (quick-fire)"], "home_mode")
         level = _button_select("Difficulty", ["easy", "medium", "hard"], "home_level")
+
+        # Any team member can create the game; whoever creates it becomes host.
+        # Clicking this shows the "how this round works" carousel first --
+        # the session itself isn't created until they tap "Ready to play".
         if st.button("🚀 Create game (become host)", key="create_team_btn", use_container_width=True):
             m = "scenario" if mode.startswith("Scenario") else "puzzle"
             _goto("mode_intro", pending_action={"scope": "team", "mode": m, "level": level, "team_key": team_key})
@@ -173,6 +178,7 @@ def render_home():
         st.session_state["_return_screen"] = "home"
         _goto("tutorial_reopen")
 
+
 # =========================================================== MODE INTRO ====
 def render_mode_intro():
     """A pop-out, left/right scrollable step carousel explaining exactly how
@@ -194,7 +200,7 @@ def render_mode_intro():
     )
     st.markdown(
         "<div class='sh-soft' style='margin-bottom:0.6rem;'>Swipe or use the arrows to "
-        "flip through the steps — then jump in.</div>",
+        "flip through the steps \u2014 then jump in.</div>",
         unsafe_allow_html=True,
     )
 
