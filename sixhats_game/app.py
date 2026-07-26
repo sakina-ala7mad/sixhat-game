@@ -32,10 +32,11 @@ if "team_key" not in st.session_state:
 styles.inject(st.session_state.theme)
 
 # --------------------------------------------------------------- topbar ----
-top_l, top_r = st.columns([4, 1])
-with top_r:
-    dark = st.toggle("🌙 Dark", value=(st.session_state.theme == "dark"), key="theme_toggle")
-    st.session_state.theme = "dark" if dark else "light"
+if st.session_state.screen != "login":
+    top_l, top_r = st.columns([4, 1])
+    with top_r:
+        dark = st.toggle("🌙 Dark", value=(st.session_state.theme == "dark"), key="theme_toggle")
+        st.session_state.theme = "dark" if dark else "light"
 
 # Live screens get a fast heartbeat so teammates see each other instantly
 # without anyone hitting refresh. Static screens don't need it.
