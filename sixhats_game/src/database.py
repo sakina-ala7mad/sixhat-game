@@ -120,7 +120,10 @@ def init_db():
             );
             """
         )
-
+        try:
+            conn.execute("ALTER TABLE session_players ADD COLUMN last_seen REAL")
+        except Exception:
+            pass
 
 # ---------------------------------------------------------------- users ----
 def name_key(name: str) -> str:
@@ -383,6 +386,37 @@ def player_leave_session(session_id, user_name):
         conn.execute(
             "UPDATE session_players SET left_game=1 WHERE session_id=? AND name_key=?",
             (session_id, name_key(user_name)),
+        )
+
+def player_leave_session(session_id, user_name):
+    with get_conn() as conn:
+        conn.execute(
+            "UPDATE session_players SET left_game=1 WHERE session_id=? AND name_key=?",
+            (session_id, name_key(user_name)),
+        )
+
+
+def touch_session_player(session_id, user_name):
+    """Heartbeat -- called every autorefresh tick by whoever still has this
+    round open, so we can tell who's actually still here."""
+    with get_conn() as conn:
+        conn.execute(
+            "UPDATE session_players SET last_seen=? WHERE session_id=? AND name_key=?",
+            (time.time(), session_id, name_key(user_name)),
+        )
+
+
+def mark_stale_players_left(session_id, stale_after=6.0):
+    """Anyone whose heartbeat has gone quiet for stale_after seconds is
+    treated as gone -- covers closing the tab, crashing, or navigating away
+    by any means other than this app's own Leave/Home buttons."""
+    with get_conn() as conn:
+        cutoff = time.time() - stale_after
+        conn.execute(
+            """UPDATE session_players SET left_game=1
+               WHERE session_id=? AND left_game=0
+               AND last_seen IS NOT NULL AND last_seen < ?""",
+            (session_id, cutoff),
         )
 
 
