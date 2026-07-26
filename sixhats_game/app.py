@@ -59,6 +59,8 @@ elif screen == "tutorial_reopen":
     screens.render_tutorial(first_time=False)
 elif screen == "home":
     screens.render_home()
+elif screen == "mode_intro":
+    screens.render_mode_intro()
 elif screen == "lobby":
     screens.render_lobby()
 elif screen == "puzzle":
