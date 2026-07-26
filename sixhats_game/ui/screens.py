@@ -19,6 +19,7 @@ from src import evaluator
 from src import game_engine as ge
 from ui import components as comp
 from ui import tutorial_content
+from ui import mode_intro_content
 
 PUZZLE_QUESTIONS_PER_ROUND = 5
 PUZZLE_SECONDS_PER_QUESTION = 180  # 3 minutes -- test value, tune down later (e.g. 15-30s)
@@ -148,15 +149,8 @@ def render_home():
         mode = _button_select("Mode", ["Scenario (team discussion)", "Puzzle (quick-fire)"], "home_mode")
         level = _button_select("Difficulty", ["easy", "medium", "hard"], "home_level")
         if st.button("🚀 Create game (become host)", key="create_team_btn", use_container_width=True):
-            m = "scenario" if mode.startswith("Scenario") else "puzzle"
-            if m == "puzzle":
-                # Puzzle mode has no lobby/host concept -- each teammate just
-                # plays their own quick-fire round and the XP flows to the team.
-                _goto("puzzle", level=level, scope="team")
-            else:
-                sid = ge.start_team_lobby(team_key, user["display_name"], m, level,
-                                           round_seconds=SCENARIO_ROUND_SECONDS)
-                _goto("lobby", session_id=sid)
+    m = "scenario" if mode.startswith("Scenario") else "puzzle"
+    _goto("mode_intro", pending_action={"scope": "team", "mode": m, "level": level, "team_key": team_key})
 
         if st.button("Leave team", key="leave_team_btn", use_container_width=True):
             db.leave_team(team_key, user["display_name"])
@@ -166,17 +160,9 @@ def render_home():
     else:
         mode = _button_select("Mode", ["Scenario (solo)", "Puzzle (quick-fire)"], "home_mode_i")
         level = _button_select("Difficulty", ["easy", "medium", "hard"], "home_level_i")
-        if st.button("▶️ Start", key="start_solo_btn", use_container_width=True):
-            m = "scenario" if mode.startswith("Scenario") else "puzzle"
-            if m == "puzzle":
-                _goto("puzzle", level=level, scope="individual")
-            else:
-                # Individual mode has no lobby wait -- start instantly with a
-                # hat already assigned, per the "instant start" design note.
-                sid = ge.start_individual_session(user["display_name"], user["display_name"], "scenario", level,
-                                                    round_seconds=SCENARIO_ROUND_SECONDS)
-                ge.begin_round(sid, "scenario", level)
-                _goto("lobby", session_id=sid)
+       if st.button("▶️ Start", key="start_solo_btn", use_container_width=True):
+    m = "scenario" if mode.startswith("Scenario") else "puzzle"
+    _goto("mode_intro", pending_action={"scope": "individual", "mode": m, "level": level})
 
     st.write("")
     st.markdown("---")
@@ -186,6 +172,71 @@ def render_home():
     if c2.button("❓ How to play", use_container_width=True):
         st.session_state["_return_screen"] = "home"
         _goto("tutorial_reopen")
+
+# =========================================================== MODE INTRO ====
+def render_mode_intro():
+    """A pop-out, left/right scrollable step carousel explaining exactly how
+    the chosen mode works (the timer, the question, how to answer, etc.)
+    shown once between clicking Start/Create and the round actually
+    beginning. Nothing is created in the database until "Ready to play"."""
+    pending = st.session_state.get("pending_action")
+    if not pending:
+        _goto("home")
+        return
+
+    mode = pending["mode"]
+    is_puzzle = mode == "puzzle"
+
+    st.markdown(
+        f"<div class='sh-title'>{'🧩' if is_puzzle else '🎭'} "
+        f"How {'Puzzle' if is_puzzle else 'Scenario'} Mode Works</div>",
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        "<div class='sh-soft' style='margin-bottom:0.6rem;'>Swipe or use the arrows to "
+        "flip through the steps — then jump in.</div>",
+        unsafe_allow_html=True,
+    )
+
+    html = mode_intro_content.PUZZLE_INTRO_HTML if is_puzzle else mode_intro_content.SCENARIO_INTRO_HTML
+    components.html(html, height=430, scrolling=False)
+
+    st.write("")
+    c1, c2 = st.columns([1, 2])
+    if c1.button("‹ Back", use_container_width=True):
+        st.session_state.pending_action = None
+        _goto("home")
+    if c2.button("✅ Ready to play!", key="ready_to_play_btn", use_container_width=True):
+        _launch_pending_action(pending)
+
+
+def _launch_pending_action(pending: dict):
+    """Actually creates/starts the session that render_mode_intro() was
+    just previewing, then navigates into it -- this is the code that used
+    to run directly on the Start/Create button click in render_home()."""
+    user = st.session_state.user
+    scope, mode, level = pending["scope"], pending["mode"], pending["level"]
+    st.session_state.pending_action = None
+
+    if scope == "team":
+        if mode == "puzzle":
+            # Puzzle mode has no lobby/host concept -- each teammate just
+            # plays their own quick-fire round and the XP flows to the team.
+            _goto("puzzle", level=level, scope="team")
+        else:
+            sid = ge.start_team_lobby(pending["team_key"], user["display_name"], mode, level,
+                                       round_seconds=SCENARIO_ROUND_SECONDS)
+            _goto("lobby", session_id=sid)
+    else:
+        if mode == "puzzle":
+            _goto("puzzle", level=level, scope="individual")
+        else:
+            # Individual mode has no lobby wait -- start instantly with a
+            # hat already assigned, per the "instant start" design note.
+            sid = ge.start_individual_session(user["display_name"], user["display_name"], "scenario", level,
+                                                round_seconds=SCENARIO_ROUND_SECONDS)
+            ge.begin_round(sid, "scenario", level)
+            _goto("lobby", session_id=sid)
 
 
 def _render_team_picker():
