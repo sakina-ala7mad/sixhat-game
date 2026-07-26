@@ -13,6 +13,7 @@ import streamlit as st
 from streamlit_autorefresh import st_autorefresh
 
 from src import database as db
+from src import game_engine as ge
 from ui import styles
 from ui import screens
 
@@ -86,14 +87,28 @@ else:
     st.rerun()
 
 # ------------------------------------------------------------- sidebar ----
+def _leave_current_round_if_any():
+    """If the player is mid scenario-round, navigating away by any of the
+    sidebar buttons below counts as leaving it -- same as clicking the
+    in-round Leave button."""
+    if st.session_state.screen == "lobby" and st.session_state.get("session_id") and st.session_state.user:
+        ge.player_leaves(st.session_state.session_id, st.session_state.user["display_name"])
+
+
 if st.session_state.user:
     with st.sidebar:
         st.markdown(f"**{st.session_state.user['display_name']}**")
+        if st.button("🏠 Home", key="sidebar_home_btn", use_container_width=True):
+            _leave_current_round_if_any()
+            st.session_state.screen = "home"
+            st.rerun()
         if st.button("❓ How to play"):
-            st.session_state["_return_screen"] = st.session_state.screen
+            _leave_current_round_if_any()
+            st.session_state["_return_screen"] = "home"
             st.session_state.screen = "tutorial_reopen"
             st.rerun()
         if st.button("🚪 Log out"):
+            _leave_current_round_if_any()
             st.session_state.user = None
             st.session_state.screen = "login"
             st.query_params.clear()
