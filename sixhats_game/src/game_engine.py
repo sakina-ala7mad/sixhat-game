@@ -19,15 +19,16 @@ from src import evaluator
 
 # ------------------------------------------------------------- creation ---
 def start_team_lobby(team_key: str, host_name: str, mode: str, level: str, round_seconds=120):
-    """Host creates a new lobby session for their team. Only the host can do this."""
+    """Host creates a new lobby session for their team. Only the host can do
+    this. Per design, being on the team does NOT auto-join this round -- only
+    the host (by creating it) and teammates who explicitly tap "Choose team
+    scenario play" are added as players."""
     existing = db.get_lobby_session_for_team(team_key)
     if existing and existing["status"] in ("lobby", "active"):
         return existing["session_id"]
     sid = db.create_session(mode=mode, scope="team", level=level, team_key=team_key,
                              host_name=host_name, round_seconds=round_seconds)
-    members = db.get_team_members(team_key)
-    for m in members:
-        db.add_player_to_session(sid, m["name_key"], m["display_name"])
+    db.add_player_to_session(sid, host_name, host_name)
     return sid
 
 
@@ -38,12 +39,19 @@ def start_individual_session(user_name: str, display_name: str, mode: str, level
     return sid
 
 
-def sync_team_session_players(session_id: str, team_key: str):
-    """Called every rerun while a team lobby is open, so newly-joined teammates
-    show up instantly without the host needing to do anything."""
-    members = db.get_team_members(team_key)
-    for m in members:
-        db.add_player_to_session(session_id, m["name_key"], m["display_name"])
+def join_scenario_round(session_id: str, display_name: str):
+    """A team member explicitly opts in to this specific round."""
+    db.add_player_to_session(session_id, display_name, display_name)
+
+
+def refresh_presence(session_id: str, user_name: str):
+    """Called every autorefresh tick by anyone with this round open: proves
+    they're still here, reaps anyone else whose heartbeat has gone stale
+    (tab closed, crashed, navigated away), and auto-ends the round the
+    moment nobody real is left in it."""
+    db.touch_session_player(session_id, user_name)
+    db.mark_stale_players_left(session_id)
+    maybe_finish_session(session_id)
 
 
 # ------------------------------------------------------------ round start -
