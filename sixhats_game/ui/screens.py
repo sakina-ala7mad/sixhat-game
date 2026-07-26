@@ -633,10 +633,16 @@ def render_puzzle_results():
     for i, item in enumerate(pz["log"]):
         q = item["question"]
         icon = "✅" if item["correct"] else "❌"
+        if item["correct"]:
+            result_text = "your answer was right"
+        elif item.get("chosen") is None:
+            result_text = "time ran out — no answer"
+        else:
+            result_text = "you answered " + hats_module.HATS[item["chosen"]]["name"]
         st.markdown(
             f"<div class='sh-card'>{icon} <i>“{q['text']}”</i><br>"
             f"Correct hat: <b>{hats_module.HATS[q['hat']]['name']}</b> "
-            f"({'your answer was right' if item['correct'] else 'you answered ' + hats_module.HATS[item['chosen']]['name']})"
+            f"({result_text})"
             f"<div class='sh-soft'>{q['explanation']}</div></div>",
             unsafe_allow_html=True,
         )
