@@ -28,8 +28,7 @@ HAT_PASTEL = {
     "blue":   {"bg": "#DFEBFB", "text": "#1A4971"},   # ~7:1
 }
 
-# One-word reminder of what each hat means, shown under its button in
-# Puzzle mode so players don't have to recall the tutorial from memory.
+
 HAT_SHORT_WORD = {
     "white": "Factual",
     "red": "Emotional",
@@ -37,6 +36,15 @@ HAT_SHORT_WORD = {
     "yellow": "Optimistic",
     "green": "Creative",
     "blue": "Control",
+}
+
+HAT_TEXT_ON_VIVID = {
+    "white":  "#8A8574",
+    "red":    "#FFFFFF",
+    "black":  "#FFFFFF",
+    "yellow": "#A6740B",
+    "green":  "#FFFFFF",
+    "blue":   "#FFFFFF",
 }
 
 
