@@ -22,8 +22,9 @@ from ui import tutorial_content
 from ui import mode_intro_content
 
 PUZZLE_QUESTIONS_PER_ROUND = 5
-PUZZLE_SECONDS_PER_QUESTION = 180  # 3 minutes -- test value, tune down later (e.g. 15-30s)
+PUZZLE_SECONDS_PER_QUESTION = 90  # 3 minutes -- test value, tune down later (e.g. 15-30s)
 SCENARIO_ROUND_SECONDS = 120
+PUZZLE_LEAVE_PENALTY = 15  # xp deducted for leaving a puzzle round early
 
 
 def _goto(screen, **extra):
