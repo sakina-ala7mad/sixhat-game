@@ -30,6 +30,17 @@ if "user" not in st.session_state:
 if "team_key" not in st.session_state:
     st.session_state.team_key = None
 
+# ------------------------------------------------- restore after refresh --
+if st.session_state.user is None and "u" in st.query_params:
+    urow = db.get_user(st.query_params["u"])
+    if urow:
+        st.session_state.user = {"name_key": urow["name_key"], "display_name": urow["display_name"]}
+        if urow["current_team"]:
+            st.session_state.team_key = urow["current_team"]
+        st.session_state.screen = st.query_params.get("screen", "home")
+        if "session_id" in st.query_params:
+            st.session_state.session_id = st.query_params["session_id"]
+
 styles.inject(st.session_state.theme)
 
 # --------------------------------------------------------------- topbar ----
@@ -85,4 +96,16 @@ if st.session_state.user:
         if st.button("🚪 Log out"):
             st.session_state.user = None
             st.session_state.screen = "login"
+            st.query_params.clear()
             st.rerun()
+
+# --------------------------------------------------- keep URL in sync -----
+if st.session_state.user:
+    st.query_params["u"] = st.session_state.user["name_key"]
+    st.query_params["screen"] = st.session_state.screen
+    if st.session_state.get("session_id") and st.session_state.screen == "lobby":
+        st.query_params["session_id"] = st.session_state.session_id
+    elif "session_id" in st.query_params:
+        del st.query_params["session_id"]
+else:
+    st.query_params.clear()
