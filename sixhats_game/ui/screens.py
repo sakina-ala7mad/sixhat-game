@@ -452,13 +452,13 @@ def _render_scenario_results(session, scenario, players, is_team):
         p = next((pp for pp in players if pp["hat_color"] == hat), None)
         with cols[i % num_cols]:
             st.markdown(
-                f"""<div class='sh-card' style="background:{pastel['bg']} !important;
+                f"""<div class='sh-card' style="background:{bg} !important;
                             border:1px solid rgba(0,0,0,0.08) !important; min-height:220px;">
                     <div style="font-size:1.8rem; line-height:1;">{meta['icon']}</div>
-                    <div style="font-weight:800; font-size:1.05rem; color:{pastel['text']} !important; margin-top:0.2rem;">
+                    <div style="font-weight:800; font-size:1.05rem; color:{text} !important; margin-top:0.2rem;">
                         {meta['name']}
                     </div>
-                    <div style="font-size:0.85rem; color:{pastel['text']} !important; opacity:0.8; margin-bottom:0.5rem;">
+                    <div style="font-size:0.85rem; color:{text} !important; opacity:0.8; margin-bottom:0.5rem;">
                         {p['display_name'] if p else 'unassigned'}
                     </div>""",
                 unsafe_allow_html=True,
@@ -466,23 +466,23 @@ def _render_scenario_results(session, scenario, players, is_team):
             if p and p["answer"]:
                 verdict = "✅ On-topic" if p["is_correct"] else "🟡 Off-topic / partial"
                 st.markdown(
-                    f"<div style='color:{pastel['text']}; opacity:0.85; font-size:0.82rem;'>"
+                    f"<div style='color:{text}; opacity:0.85; font-size:0.82rem;'>"
                     f"{verdict} · creativity {p['creativity_score']}/10 · +{p['speed_xp']} xp</div>",
                     unsafe_allow_html=True,
                 )
                 st.markdown(
-                    f"<div style='color:{pastel['text']}; font-size:0.88rem; margin-top:0.4rem;'>"
+                    f"<div style='color:{text}; font-size:0.88rem; margin-top:0.4rem;'>"
                     f"<b>Their answer:</b> {p['answer']}</div>",
                     unsafe_allow_html=True,
                 )
             elif p:
                 st.markdown(
-                    f"<div style='color:{pastel['text']}; opacity:0.75; font-size:0.85rem;'>"
+                    f"<div style='color:{text}; opacity:0.75; font-size:0.85rem;'>"
                     f"No answer submitted this round.</div>",
                     unsafe_allow_html=True,
                 )
             st.markdown(
-                f"<div style='color:{pastel['text']}; opacity:0.85; font-size:0.82rem; "
+                f"<div style='color:{text}; opacity:0.85; font-size:0.82rem; "
                 f"margin-top:0.5rem; padding-top:0.4rem; border-top:1px solid rgba(0,0,0,0.08);'>"
                 f"<b>Reference take:</b> {scenario['reference_answers'].get(hat, '')}</div>",
                 unsafe_allow_html=True,
