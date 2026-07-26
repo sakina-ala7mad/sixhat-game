@@ -183,7 +183,7 @@ def render_home():
     c1, c2 = st.columns(2)
     if c1.button("🏆 Dashboard", use_container_width=True):
         _goto("dashboard")
-    if c2.button("❓ How to play again", use_container_width=True):
+    if c2.button("❓ How to play", use_container_width=True):
         st.session_state["_return_screen"] = "home"
         _goto("tutorial_reopen")
 
@@ -269,13 +269,13 @@ def render_lobby():
             st.info(f"Team join ID: **{team['team_id']}** — teammates can join anytime, the host doesn't need "
                     f"to wait for a full team.")
         if is_host:
-            if st.button("▶️ Start round", type="primary", use_container_width=True):
+            if st.button("▶️ Start round", key="start_round_btn", use_container_width=True):
                 ge.begin_round(session_id, "scenario", session["level"])
                 st.rerun()
         else:
             st.info("Waiting for the host to start the round…")
             st.button("🔄 Refresh", use_container_width=True)
-        if st.button("🚪 Leave", use_container_width=True):
+        if st.button("🚪 Leave", key="leave_lobby_btn", use_container_width=True):
             ge.player_leaves(session_id, user["display_name"])
             if is_team:
                 db.leave_team(session["team_key"], user["display_name"])
@@ -348,7 +348,7 @@ def render_lobby():
     else:
         st.warning("No hat assigned to you for this round (more players than active hats, or you joined late).")
 
-    if st.button("🚪 Leave round", use_container_width=True):
+    if st.button("🚪 Leave round", key="leave_round_btn", use_container_width=True):
         ge.player_leaves(session_id, user["display_name"])
         st.rerun()
 
