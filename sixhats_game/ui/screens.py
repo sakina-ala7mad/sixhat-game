@@ -149,8 +149,8 @@ def render_home():
         mode = _button_select("Mode", ["Scenario (team discussion)", "Puzzle (quick-fire)"], "home_mode")
         level = _button_select("Difficulty", ["easy", "medium", "hard"], "home_level")
         if st.button("🚀 Create game (become host)", key="create_team_btn", use_container_width=True):
-    m = "scenario" if mode.startswith("Scenario") else "puzzle"
-    _goto("mode_intro", pending_action={"scope": "team", "mode": m, "level": level, "team_key": team_key})
+            m = "scenario" if mode.startswith("Scenario") else "puzzle"
+            _goto("mode_intro", pending_action={"scope": "team", "mode": m, "level": level, "team_key": team_key})
 
         if st.button("Leave team", key="leave_team_btn", use_container_width=True):
             db.leave_team(team_key, user["display_name"])
@@ -161,8 +161,8 @@ def render_home():
         mode = _button_select("Mode", ["Scenario (solo)", "Puzzle (quick-fire)"], "home_mode_i")
         level = _button_select("Difficulty", ["easy", "medium", "hard"], "home_level_i")
        if st.button("▶️ Start", key="start_solo_btn", use_container_width=True):
-    m = "scenario" if mode.startswith("Scenario") else "puzzle"
-    _goto("mode_intro", pending_action={"scope": "individual", "mode": m, "level": level})
+            m = "scenario" if mode.startswith("Scenario") else "puzzle"
+            _goto("mode_intro", pending_action={"scope": "individual", "mode": m, "level": level})
 
     st.write("")
     st.markdown("---")
