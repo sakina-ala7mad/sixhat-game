@@ -146,10 +146,8 @@ def render_home():
             return
 
         mode = _button_select("Mode", ["Scenario (team discussion)", "Puzzle (quick-fire)"], "home_mode")
-        level = st.select_slider("Difficulty", ["easy", "medium", "hard"], key="home_level")
-
-        # Any team member can create the game; whoever creates it becomes host.
-        if st.button("🚀 Create game (become host)", type="primary", use_container_width=True):
+        level = _button_select("Difficulty", ["easy", "medium", "hard"], "home_level")
+        if st.button("🚀 Create game (become host)", key="create_team_btn", use_container_width=True):
             m = "scenario" if mode.startswith("Scenario") else "puzzle"
             if m == "puzzle":
                 # Puzzle mode has no lobby/host concept -- each teammate just
@@ -160,15 +158,15 @@ def render_home():
                                            round_seconds=SCENARIO_ROUND_SECONDS)
                 _goto("lobby", session_id=sid)
 
-        if st.button("Leave team", use_container_width=True):
+        if st.button("Leave team", key="leave_team_btn", use_container_width=True):
             db.leave_team(team_key, user["display_name"])
             st.session_state.team_key = None
             st.rerun()
 
     else:
         mode = _button_select("Mode", ["Scenario (solo)", "Puzzle (quick-fire)"], "home_mode_i")
-        level = st.select_slider("Difficulty", ["easy", "medium", "hard"], key="home_level_i")
-        if st.button("▶️ Start", type="primary", use_container_width=True):
+        level = _button_select("Difficulty", ["easy", "medium", "hard"], "home_level_i")
+        if st.button("▶️ Start", key="start_solo_btn", use_container_width=True):
             m = "scenario" if mode.startswith("Scenario") else "puzzle"
             if m == "puzzle":
                 _goto("puzzle", level=level, scope="individual")
