@@ -424,26 +424,64 @@ def _render_scenario_results(session, scenario, players, is_team):
     st.success(f"Round complete! Baseline round XP awarded: +{xp_engine.scenario_round_baseline(session['level'])}"
                + (" to the whole team." if is_team else "."))
 
-    st.markdown("### 🧠 Debrief — every hat, side by side")
+    # Only show the hats that were actually in play this round -- not all 6.
+    try:
+        active_hats = json.loads(session["active_hats"]) if session["active_hats"] else []
+    except Exception:
+        active_hats = []
+    round_hats = [h for h in hats_module.HAT_ORDER if h in active_hats] or hats_module.HAT_ORDER
+
+    st.markdown(f"### 🧠 Debrief — this round's {len(round_hats)} hat"
+                f"{'s' if len(round_hats) != 1 else ''}, side by side")
     st.markdown("<div class='sh-soft'>This is the real value of Six Hats: compare how each lens saw the same "
                 "situation.</div>", unsafe_allow_html=True)
-    for hat in hats_module.HAT_ORDER:
+
+    num_cols = min(3, len(round_hats)) or 1
+    cols = st.columns(num_cols)
+    for i, hat in enumerate(round_hats):
         meta = hats_module.HATS[hat]
+        pastel = comp.HAT_PASTEL[hat]
         p = next((pp for pp in players if pp["hat_color"] == hat), None)
-        with st.container():
-            st.markdown(f"<div class='sh-card'><b>{meta['icon']} {meta['name']} — {p['display_name'] if p else 'unassigned'}</b>",
-                        unsafe_allow_html=True)
+        with cols[i % num_cols]:
+            st.markdown(
+                f"""<div class='sh-card' style="background:{pastel['bg']} !important;
+                            border:1px solid rgba(0,0,0,0.08) !important; min-height:220px;">
+                    <div style="font-size:1.8rem; line-height:1;">{meta['icon']}</div>
+                    <div style="font-weight:800; font-size:1.05rem; color:{pastel['text']} !important; margin-top:0.2rem;">
+                        {meta['name']}
+                    </div>
+                    <div style="font-size:0.85rem; color:{pastel['text']} !important; opacity:0.8; margin-bottom:0.5rem;">
+                        {p['display_name'] if p else 'unassigned'}
+                    </div>""",
+                unsafe_allow_html=True,
+            )
             if p and p["answer"]:
                 verdict = "✅ On-topic" if p["is_correct"] else "🟡 Off-topic / partial"
-                st.markdown(f"<div class='sh-soft'>{verdict} · creativity {p['creativity_score']}/10 "
-                            f"· +{p['speed_xp']} xp</div>", unsafe_allow_html=True)
-                st.write(f"**Their answer:** {p['answer']}")
+                st.markdown(
+                    f"<div style='color:{pastel['text']}; opacity:0.85; font-size:0.82rem;'>"
+                    f"{verdict} · creativity {p['creativity_score']}/10 · +{p['speed_xp']} xp</div>",
+                    unsafe_allow_html=True,
+                )
+                st.markdown(
+                    f"<div style='color:{pastel['text']}; font-size:0.88rem; margin-top:0.4rem;'>"
+                    f"<b>Their answer:</b> {p['answer']}</div>",
+                    unsafe_allow_html=True,
+                )
             elif p:
-                st.write("_No answer submitted this round._")
-            st.markdown(f"<div class='sh-soft'>**Reference {meta['name']} take:** "
-                        f"{scenario['reference_answers'].get(hat, '')}</div>", unsafe_allow_html=True)
+                st.markdown(
+                    f"<div style='color:{pastel['text']}; opacity:0.75; font-size:0.85rem;'>"
+                    f"No answer submitted this round.</div>",
+                    unsafe_allow_html=True,
+                )
+            st.markdown(
+                f"<div style='color:{pastel['text']}; opacity:0.85; font-size:0.82rem; "
+                f"margin-top:0.5rem; padding-top:0.4rem; border-top:1px solid rgba(0,0,0,0.08);'>"
+                f"<b>Reference take:</b> {scenario['reference_answers'].get(hat, '')}</div>",
+                unsafe_allow_html=True,
+            )
             st.markdown("</div>", unsafe_allow_html=True)
 
+    st.write("")
     c1, c2 = st.columns(2)
     if is_team and c1.button("🔁 Play again with same team", type="primary", use_container_width=True):
         team_key = session["team_key"]
