@@ -68,7 +68,7 @@ def render_login():
 # ============================================================ TUTORIAL ====
 def render_tutorial(first_time=True):
     st.markdown("<div class='sh-title'>🎓 How Six Hats Thinking Works</div>", unsafe_allow_html=True)
-    components.html(tutorial_content.TUTORIAL_HTML, height=1650, scrolling=False)
+    components.html(tutorial_content.TUTORIAL_HTML, height=1150, scrolling=False)
 
     st.markdown(
         "<div class='sh-card'>"
