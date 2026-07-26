@@ -213,7 +213,7 @@ def inject(theme: str):
 
         /* Start/Create actions -> green. Leave actions -> red. */
         .st-key-start_solo_btn button, .st-key-create_team_btn button,
-        .st-key-start_round_btn button {{
+        .st-key-start_round_btn button, .st-key-ready_to_play_btn button {{
             background: #3FBE78 !important;
             border: none !important;
             color: #ffffff !important;
