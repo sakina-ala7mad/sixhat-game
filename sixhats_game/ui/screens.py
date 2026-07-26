@@ -352,6 +352,17 @@ def render_lobby():
     st.markdown(f"<div class='sh-card'><b>Situation — {scenario['title']}</b><br>{scenario['situation']}</div>",
                 unsafe_allow_html=True)
 
+    # Round finished (everyone submitted, or everyone left) -- freeze here,
+    # no timer, no more ticking down.
+    if session["status"] == "finished":
+        comp.render_faces_row(
+            [{"name": p["display_name"], "hat_color": p["hat_color"], "submitted": bool(p["submitted"])}
+             for p in players if not p["left_game"]],
+            hats_active=active_hats or None,
+        )
+        _render_scenario_results(session, scenario, players, is_team)
+        return
+
     left = ge.seconds_left(session)
     tcol, _ = st.columns([1, 3])
     with tcol:
@@ -362,10 +373,6 @@ def render_lobby():
          for p in players if not p["left_game"]],
         hats_active=active_hats or None,
     )
-
-    if session["status"] == "finished":
-        _render_scenario_results(session, scenario, players, is_team)
-        return
 
     if ge.round_expired(session):
         my_row = next((p for p in players if p["name_key"] == user["name_key"]), None)
@@ -440,7 +447,8 @@ def _render_scenario_results(session, scenario, players, is_team):
     cols = st.columns(num_cols)
     for i, hat in enumerate(round_hats):
         meta = hats_module.HATS[hat]
-        pastel = comp.HAT_PASTEL[hat]
+        bg = hats_module.HATS[hat]["color_hex"]
+        text = comp.HAT_TEXT_ON_VIVID[hat]
         p = next((pp for pp in players if pp["hat_color"] == hat), None)
         with cols[i % num_cols]:
             st.markdown(
@@ -489,6 +497,7 @@ def _render_scenario_results(session, scenario, players, is_team):
                                    round_seconds=SCENARIO_ROUND_SECONDS)
         _goto("lobby", session_id=sid)
     if c2.button("🏠 Back to home", use_container_width=True):
+        ge.player_leaves(session["session_id"], st.session_state.user["display_name"])
         _goto("home")
 
 
