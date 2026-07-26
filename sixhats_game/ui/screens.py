@@ -34,7 +34,7 @@ def _goto(screen, **extra):
 
 # ============================================================== LOGIN =====
 def render_login():
-    st.markdown("<div class='sh-title' style='font-size:2rem;'><span class='sh-bounce'>🎩</span> Six Hats Arena</div>", unsafe_allow_html=True)
+    st.markdown("<div class='sh-title' style='font-size:2rem;'><span class='sh-bounce'>🎩</span> Six Hats </div>", unsafe_allow_html=True)
     st.markdown(
         "<div class='sh-soft'>Sharpen how your team thinks, decides, and communicates — "
         "one hat at a time.</div>", unsafe_allow_html=True,
@@ -67,7 +67,7 @@ def render_login():
 # ============================================================ TUTORIAL ====
 def render_tutorial(first_time=True):
     st.markdown("<div class='sh-title'>🎓 How Six Hats Thinking Works</div>", unsafe_allow_html=True)
-    components.html(tutorial_content.TUTORIAL_HTML, height=900, scrolling=True)
+    components.html(tutorial_content.TUTORIAL_HTML, height=1650, scrolling=False)
 
     st.markdown(
         "<div class='sh-card'>"
@@ -98,9 +98,10 @@ def _button_select(label: str, options: list[str], state_key: str) -> str:
     (replaces st.radio). The current choice is remembered in
     st.session_state[state_key] across reruns; the selected option is shown
     as a solid/primary button, the rest as outlined/secondary buttons."""
+    
     if state_key not in st.session_state:
         st.session_state[state_key] = options[0]
-    st.markdown(f"<div class='sh-soft' style='margin-bottom:0.3rem;'>{label}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='sh-section'><div class='sh-section-label'>{label}</div>", unsafe_allow_html=True)
     cols = st.columns(len(options))
     for i, opt in enumerate(options):
         selected = st.session_state[state_key] == opt
@@ -110,6 +111,7 @@ def _button_select(label: str, options: list[str], state_key: str) -> str:
                          use_container_width=True):
                 st.session_state[state_key] = opt
                 st.rerun()
+    st.markdown("</div>", unsafe_allow_html=True)
     return st.session_state[state_key]
 
 
