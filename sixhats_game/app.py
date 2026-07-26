@@ -13,7 +13,7 @@ import streamlit as st
 from streamlit_autorefresh import st_autorefresh
 
 from src import database as db
-from ui import styles, screens
+from ui import styles,screens
 
 st.set_page_config(page_title="Six Hats Arena", page_icon="🎩", layout="centered")
 
