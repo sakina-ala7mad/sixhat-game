@@ -142,9 +142,14 @@ def render_home():
             unsafe_allow_html=True,
         )
         existing = db.get_lobby_session_for_team(team_key)
+        existing_active_players = []
         if existing and existing["status"] in ("lobby", "active"):
-            st.info("Your team already has a game open — jump back in.")
-            if st.button("Rejoin game", type="primary", use_container_width=True):
+            db.mark_stale_players_left(existing["session_id"], stale_after=10.0)
+            existing_active_players = [p for p in db.get_session_players(existing["session_id"]) if not p["left_game"]]
+
+        if existing and existing["status"] in ("lobby", "active") and existing_active_players:
+            st.info(f"{existing_active_players[0]['display_name']} is already in a team scenario game — jump in.")
+            if st.button("Join your team game", type="primary", use_container_width=True):
                 _goto("lobby", session_id=existing["session_id"])
             return
 
@@ -330,7 +335,7 @@ def render_lobby():
         if is_team and not is_host and not already_joined:
             st.markdown("<div class='sh-soft' style='text-align:center;'>You're on this team, but not in "
                         "this round yet.</div>", unsafe_allow_html=True)
-            if st.button("🎯 Choose team scenario play", key="join_round_btn", type="primary",
+            if st.button("🎯 Play with them", key="join_round_btn", type="primary",
                          use_container_width=True):
                 ge.join_scenario_round(session_id, user["display_name"])
                 st.rerun()
