@@ -20,7 +20,7 @@ from ui import screens
 st.set_page_config(page_title="Six Hats Arena", page_icon="🎩", layout="centered")
 
 db.init_db()
-//db.reap_abandoned_teams_throttled()
+#db.reap_abandoned_teams_throttled()
 
 # ------------------------------------------------------------- session ----
 if "theme" not in st.session_state:
