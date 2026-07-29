@@ -224,8 +224,11 @@ def render_home():
             _goto("mode_intro", pending_action={"scope": "team", "mode": m, "level": level, "team_key": team_key})
 
         if st.button("Leave team", key="leave_team_btn", use_container_width=True):
-            db.leave_team(team_key, user["display_name"])
+            was_last = db.leave_team(team_key, user["display_name"])
             st.session_state.team_key = None
+            if was_last:
+                st.toast("You were the last member — this team has been deleted. "
+                         "The name is free again for a new team.")
             st.rerun()
 
     else:
