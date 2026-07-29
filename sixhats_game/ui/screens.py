@@ -432,12 +432,14 @@ def render_lobby():
                 st.warning("⚠️ This leaves your team entirely, not just this round — you'll need "
                            "the team password again to rejoin. Are you sure?")
                 lc1, lc2 = st.columns(2)
-                if lc1.button("✅ Yes, leave the team", key="confirm_leave_team_yes",
-                               type="primary", use_container_width=True):
+                if lc1.button("✅ Yes, leave the team", key="confirm_leave_team_yes", type="primary", use_container_width=True):
                     ge.player_leaves(session_id, user["display_name"])
-                    db.leave_team(session["team_key"], user["display_name"])
+                    was_last = db.leave_team(session["team_key"], user["display_name"])
                     st.session_state.team_key = None
                     st.session_state["confirm_leave_team"] = False
+                    if was_last:
+                        st.toast("You were the last member — this team has been deleted. "
+                                 "The name is free again for a new team.")
                     _goto("home")
                 if lc2.button("❌ Cancel", key="confirm_leave_team_no", use_container_width=True):
                     st.session_state["confirm_leave_team"] = False
