@@ -349,13 +349,24 @@ def join_team(team_key: str, password: str, user_name: str):
         return True, None
 
 
-def leave_team(team_key: str, user_name: str):
+def leave_team(team_key: str, user_name: str) -> bool:
+    """Marks the player as no longer active on the team. Returns True if this
+    was the last active member, in which case the team (and its membership
+    rows) are deleted outright rather than left behind as an empty shell."""
     with get_conn() as conn:
         conn.execute(
             "UPDATE team_members SET active=0 WHERE team_key=? AND name_key=?",
             (team_key, name_key(user_name)),
         )
         conn.execute("UPDATE users SET current_team=NULL WHERE name_key=?", (name_key(user_name),))
+        remaining = conn.execute(
+            "SELECT COUNT(*) c FROM team_members WHERE team_key=? AND active=1", (team_key,)
+        ).fetchone()["c"]
+        if remaining == 0:
+            conn.execute("DELETE FROM team_members WHERE team_key=?", (team_key,))
+            conn.execute("DELETE FROM teams WHERE team_key=?", (team_key,))
+            return True
+        return False
 
 
 def active_member_count(team_key: str) -> int:
