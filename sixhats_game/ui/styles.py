@@ -161,7 +161,7 @@ def inject(theme: str):
         .sh-face:hover {{ transform: translateY(-4px) rotate(-6deg) scale(1.06); }}
 
         .sh-face-name {{
-            font-size: 0.78rem;
+            font-size: 0.92rem;
             font-weight: 700;
             color: var(--text) !important;
             max-width: 78px;

@@ -32,15 +32,23 @@ if "team_key" not in st.session_state:
     st.session_state.team_key = None
 
 # ------------------------------------------------- restore after refresh --
-if st.session_state.user is None and "u" in st.query_params:
-    urow = db.get_user(st.query_params["u"])
-    if urow:
+if st.session_state.user is None and "u" in st.query_params and "t" in st.query_params:
+    candidate_name = st.query_params["u"]
+    candidate_token = st.query_params["t"]
+    # The token must match this user's CURRENT login, not just be non-empty --
+    # otherwise anyone who ever saw this URL (browser history, a bookmark, a
+    # screenshot, a shared link) could resume this account with no password.
+    if db.verify_session_token(candidate_name, candidate_token):
+        urow = db.get_user(candidate_name)
         st.session_state.user = {"name_key": urow["name_key"], "display_name": urow["display_name"]}
+        st.session_state.session_token = candidate_token
         if urow["current_team"]:
             st.session_state.team_key = urow["current_team"]
         st.session_state.screen = st.query_params.get("screen", "home")
         if "session_id" in st.query_params:
             st.session_state.session_id = st.query_params["session_id"]
+    else:
+        st.query_params.clear()
 
 styles.inject(st.session_state.theme)
 
@@ -88,11 +96,39 @@ else:
 
 # ------------------------------------------------------------- sidebar ----
 def _leave_current_round_if_any():
-    """If the player is mid scenario-round, navigating away by any of the
-    sidebar buttons below counts as leaving it -- same as clicking the
-    in-round Leave button."""
+    """If the player is mid scenario-round OR mid puzzle-round, navigating
+    away by any of the sidebar buttons below counts as leaving it -- same
+    consequence as the in-round Leave/Pause button. This used to only cover
+    scenario mode's 'lobby' screen: a puzzle player who used the sidebar
+    instead of the in-round Pause button skipped the leave penalty entirely,
+    AND left a stale, already-timed-out round sitting in session_state that
+    would silently reappear (already time-expired) the next time they
+    started a puzzle round."""
     if st.session_state.screen == "lobby" and st.session_state.get("session_id") and st.session_state.user:
         ge.player_leaves(st.session_state.session_id, st.session_state.user["display_name"])
+    if st.session_state.screen == "puzzle" and st.session_state.get("puzzle"):
+        screens.leave_puzzle_round_and_clear(apply_penalty=True)
+    elif st.session_state.screen == "puzzle_results" and st.session_state.get("puzzle"):
+        screens.leave_puzzle_round_and_clear(apply_penalty=False)
+
+
+# Session-state keys that describe "what game/round am I in right now" --
+# these must never survive a logout, or the next person to log in on the
+# same browser/device (a shared office laptop, a kiosk) can silently inherit
+# the previous user's team, in-progress round, or half-finished puzzle.
+_GAME_STATE_KEYS = [
+    "team_key", "session_id", "puzzle", "level", "scope", "pending_action",
+    "home_scope", "home_mode", "home_level", "home_mode_i", "home_level_i",
+    "confirm_leave_puzzle", "confirm_leave_team", "_return_screen", "session_token",
+]
+
+
+def _clear_game_session_state():
+    for k in _GAME_STATE_KEYS:
+        st.session_state.pop(k, None)
+    for k in list(st.session_state.keys()):
+        if k.startswith("answered_") or k.startswith("answer_") or k.startswith("jt_pw_"):
+            del st.session_state[k]
 
 
 if st.session_state.user:
@@ -109,7 +145,9 @@ if st.session_state.user:
             st.rerun()
         if st.button("🚪 Log out"):
             _leave_current_round_if_any()
+            db.clear_session_token(st.session_state.user["display_name"])
             st.session_state.user = None
+            _clear_game_session_state()
             st.session_state.screen = "login"
             st.query_params.clear()
             st.rerun()
@@ -117,6 +155,7 @@ if st.session_state.user:
 # --------------------------------------------------- keep URL in sync -----
 if st.session_state.user:
     st.query_params["u"] = st.session_state.user["name_key"]
+    st.query_params["t"] = st.session_state.get("session_token", "")
     st.query_params["screen"] = st.session_state.screen
     if st.session_state.get("session_id") and st.session_state.screen == "lobby":
         st.query_params["session_id"] = st.session_state.session_id

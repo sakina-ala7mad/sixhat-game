@@ -283,20 +283,31 @@ const hats = [
 const rack = document.getElementById('rack');
 const grid = document.getElementById('grid');
 
+function activateOn(el, handler) {
+  el.tabIndex = 0;
+  el.setAttribute('role', 'button');
+  el.addEventListener('click', handler);
+  el.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handler(); }
+  });
+}
+
 hats.forEach((h, i) => {
   const hat = document.createElement('div');
   hat.className = `hat hat${h.color}`;
+  hat.setAttribute('aria-label', `${h.name} hat — ${h.job}. Tap to see what it means.`);
   hat.innerHTML = `<div class="hat-top"><div class="face"><div class="eye"></div><div class="eye"></div></div></div><div class="hat-brim"></div>`;
-  hat.onclick = () => {
+  activateOn(hat, () => {
     const card = document.getElementById('card' + i);
     card.classList.toggle('flipped');
     card.scrollIntoView({ behavior:'smooth', block:'center' });
-  };
+  });
   rack.appendChild(hat);
 
   const outer = document.createElement('div');
   outer.className = 'flip-outer';
   outer.id = 'card' + i;
+  outer.setAttribute('aria-label', `${h.name} hat card. ${h.job}. Press Enter to flip for details.`);
   outer.innerHTML = `
     <div class="flip-inner">
       <div class="face-card c${h.color}">
@@ -310,7 +321,7 @@ hats.forEach((h, i) => {
         <span class="tap-tag">tap to flip back</span>
       </div>
     </div>`;
-  outer.onclick = () => outer.classList.toggle('flipped');
+  activateOn(outer, () => outer.classList.toggle('flipped'));
   grid.appendChild(outer);
 });
 </script>

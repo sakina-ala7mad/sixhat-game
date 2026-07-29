@@ -23,7 +23,7 @@ def _carousel_html(accent: str, accent_dark: str, steps: list[dict]) -> str:
     slides = ""
     for i, s in enumerate(steps, start=1):
         slides += f"""
-        <div class="slide">
+        <div class="slide" role="group" aria-label="Step {i} of {len(steps)}: {s['title']}">
           <div class="step-badge">Step {i} of {len(steps)}</div>
           <div class="mockup">{s['mockup']}</div>
           <div class="slide-title">{s['icon']} {s['title']}</div>
@@ -103,9 +103,9 @@ def _carousel_html(accent: str, accent_dark: str, steps: list[dict]) -> str:
 <body>
 <div class="wrap">
   <div class="rail-wrap">
-    <button class="nav-btn nav-left" onclick="document.getElementById('rail').scrollBy({{left:-300,behavior:'smooth'}})">‹</button>
-    <button class="nav-btn nav-right" onclick="document.getElementById('rail').scrollBy({{left:300,behavior:'smooth'}})">›</button>
-    <div class="rail" id="rail">
+    <button class="nav-btn nav-left" aria-label="Previous step" onclick="document.getElementById('rail').scrollBy({{left:-300,behavior:'smooth'}})">‹</button>
+    <button class="nav-btn nav-right" aria-label="Next step" onclick="document.getElementById('rail').scrollBy({{left:300,behavior:'smooth'}})">›</button>
+    <div class="rail" id="rail" role="region" aria-label="Step-by-step walkthrough" tabindex="0">
       {slides}
     </div>
   </div>
@@ -114,6 +114,10 @@ def _carousel_html(accent: str, accent_dark: str, steps: list[dict]) -> str:
 <script>
   const rail = document.getElementById('rail');
   const dots = Array.from(document.querySelectorAll('.dot'));
+  rail.addEventListener('keydown', (e) => {{
+    if (e.key === 'ArrowRight') {{ e.preventDefault(); rail.scrollBy({{left:300,behavior:'smooth'}}); }}
+    if (e.key === 'ArrowLeft') {{ e.preventDefault(); rail.scrollBy({{left:-300,behavior:'smooth'}}); }}
+  }});
   function updateDots(){{
     const slides = Array.from(document.querySelectorAll('.slide'));
     const railBox = rail.getBoundingClientRect();

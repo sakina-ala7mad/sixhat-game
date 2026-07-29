@@ -44,14 +44,25 @@ def level_for_xp(total_xp: int) -> str:
 
 
 def level_progress(total_xp: int) -> dict:
-    """Returns {level, floor, ceiling, into_level, span, pct} for a progress bar."""
-    level = level_for_xp(total_xp)
+    """Returns {level, floor, ceiling, into_level, span, pct} for a progress bar.
+
+    total_xp CAN legitimately go negative (a wrong puzzle answer is -5 XP,
+    and a puzzle-leave penalty can also subtract) -- there's no floor at 0
+    anywhere upstream, by design, so total_xp stays an honest running total.
+    For *display* purposes, though, we clamp here: a negative pct fed into
+    Streamlit's st.progress() raises StreamlitAPIException outright, which
+    previously meant a brand-new player's very first wrong answer could
+    crash the Home screen. Nothing below "easy, 0%" is meaningful to show
+    anyway, so clamping at the display layer is the right place to fix it."""
+    display_xp = max(0, total_xp)
+    level = level_for_xp(display_xp)
     floor, ceiling = LEVEL_THRESHOLDS[level]
     if level == "hard":
-        ceiling = max(ceiling, total_xp)  # hard has no hard cap in the UI bar
+        ceiling = max(ceiling, display_xp)  # hard has no hard cap in the UI bar
     span = max(1, ceiling - floor)
-    into_level = min(span, total_xp - floor)
+    into_level = min(span, display_xp - floor)
     pct = round(100 * into_level / span)
+    pct = max(0, min(100, pct))  # belt-and-braces: st.progress() requires 0-100
     return {"level": level, "floor": floor, "ceiling": ceiling, "into_level": into_level, "span": span, "pct": pct}
 
 

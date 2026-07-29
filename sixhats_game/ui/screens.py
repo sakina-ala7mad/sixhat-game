@@ -22,9 +22,43 @@ from ui import tutorial_content
 from ui import mode_intro_content
 
 PUZZLE_QUESTIONS_PER_ROUND = 5
-PUZZLE_SECONDS_PER_QUESTION = 90  # 3 minutes -- test value, tune down later (e.g. 15-30s)
+PUZZLE_SECONDS_PER_QUESTION = 20  # quick-fire pacing, per the design spec
 SCENARIO_ROUND_SECONDS = 120
 PUZZLE_LEAVE_PENALTY = 15  # xp deducted for leaving a puzzle round early
+
+
+def _apply_puzzle_leave_penalty(pz: dict) -> int:
+    """Deducts (and returns) the leave-early XP penalty. Team-scope puzzle XP
+    flows to the team pool only (see render_puzzle below, matching the
+    README's own design -- 'their XP is credited to the whole team') so the
+    penalty mirrors that and doesn't touch every teammate's personal XP."""
+    user = st.session_state.get("user")
+    scope = st.session_state.get("scope", "individual")
+    penalty = min(PUZZLE_LEAVE_PENALTY, max(pz.get("score", 0), 0))
+    if penalty:
+        if scope == "team" and st.session_state.get("team_key"):
+            db.add_team_xp(st.session_state.team_key, -penalty)
+        elif user:
+            db.add_user_xp(user["display_name"], -penalty, individual=True)
+    return penalty
+
+
+def leave_puzzle_round_and_clear(apply_penalty: bool = True):
+    """Used when a player leaves a puzzle round via the SIDEBAR (Home / How
+    to play / Log out) rather than the in-round 'Pause / end game' button --
+    those buttons navigate straight past the round with no recap screen, so
+    unlike the in-round confirm flow, this always clears session_state too.
+    That fixes a round that was previously left half-answered in
+    session_state silently reappearing (already time-expired) the next time
+    the player started a fresh puzzle round."""
+    pz = st.session_state.get("puzzle")
+    if pz and apply_penalty and not pz.get("left_early"):
+        penalty = _apply_puzzle_leave_penalty(pz)
+        if penalty:
+            st.toast(f"Left the puzzle round early — {penalty} xp penalty applied.")
+    for k in list(st.session_state.keys()):
+        if k == "puzzle" or k.startswith("answered_") or k.startswith("pz_"):
+            del st.session_state[k]
 
 
 def _goto(screen, **extra):
@@ -45,18 +79,33 @@ def render_login():
     with st.container():
         st.markdown("<div class='sh-card'>", unsafe_allow_html=True)
         name = st.text_input("Your name", key="login_name", placeholder="e.g. Sara Adel")
-        password = st.text_input("Password", key="login_pw", type="password",
+        show_pw = st.checkbox("👁️ Show password", key="login_show_pw")
+        pw_type = "default" if show_pw else "password"
+        password = st.text_input("Password", key="login_pw", type=pw_type,
                                   help="First time using this name creates your account. "
                                        "Log back in later with the same name + password.")
+        # We don't know for certain whether this name is new until submit, but
+        # we can check cheaply as they type so a first-timer gets a confirm
+        # field -- a typo'd password on account creation otherwise permanently
+        # locks them out of that name with no way back in.
+        is_new_name = bool(name.strip()) and not db.get_user(name)
+        password2 = None
+        if is_new_name:
+            password2 = st.text_input("Confirm password (first time using this name)",
+                                       key="login_pw2", type=pw_type)
         if st.button("Enter the game", type="primary", use_container_width=True):
             if not name.strip():
                 st.warning("Please enter a name.")
+            elif is_new_name and password != password2:
+                st.error("Those two passwords don't match — please re-enter them.")
             else:
                 user, err = db.create_or_login_user(name, password)
                 if err:
                     st.error(err)
                 else:
+                    token = db.new_session_token(user["display_name"])
                     st.session_state.user = {"name_key": user["name_key"], "display_name": user["display_name"]}
+                    st.session_state.session_token = token
                     if user["current_team"]:
                         st.session_state.team_key = user["current_team"]
                     if not user["seen_tutorial"]:
@@ -125,6 +174,11 @@ def render_home():
 
     st.markdown(f"<div class='sh-title'>Welcome back, {user['display_name']} <span class='sh-bounce'>👋</span></div>", unsafe_allow_html=True)
     comp.render_xp_bar(urow["total_xp"])
+    relaxed = st.checkbox("🐢 Give me 50% more time on round timers (accessibility)",
+                           value=bool(urow["relaxed_timing"]), key="relaxed_timing_toggle")
+    if relaxed != bool(urow["relaxed_timing"]):
+        db.set_relaxed_timing(user["display_name"], relaxed)
+        st.rerun()
     st.write("")
 
     scope = _button_select("Play as", ["Individual", "Team"], "home_scope")
@@ -138,13 +192,19 @@ def render_home():
         st.markdown(
             f"<div class='sh-card'>Your team: <b>{team['display_name']}</b> "
             f"&nbsp; <span class='sh-pill'>ID: {team['team_id']}</span> "
-            f"&nbsp; Team XP: <b>{team['total_xp']}</b></div>",
+            f"&nbsp; Team XP: <b>{team['total_xp']}</b><br>"
+            f"<span class='sh-soft'>Team password (share with teammates so they can join): "
+            f"<b>{team['password']}</b></span></div>",
             unsafe_allow_html=True,
         )
+        if st.button("🔑 Generate a new team password", key="reset_team_pw_btn"):
+            new_pw = db.reset_team_password(team_key)
+            st.success(f"New team password: {new_pw} — the old one no longer works.")
+            st.rerun()
         existing = db.get_lobby_session_for_team(team_key)
         existing_active_players = []
         if existing and existing["status"] in ("lobby", "active"):
-            db.mark_stale_players_left(existing["session_id"], stale_after=10.0)
+            db.mark_stale_players_left(existing["session_id"], stale_after=25.0)
             existing_active_players = [p for p in db.get_session_players(existing["session_id"]) if not p["left_game"]]
 
         if existing and existing["status"] in ("lobby", "active") and existing_active_players:
@@ -199,6 +259,13 @@ def render_mode_intro():
     mode = pending["mode"]
     is_puzzle = mode == "puzzle"
 
+    user = st.session_state.user
+    urow = db.get_user(user["display_name"])
+    already_seen = bool(urow["seen_puzzle_intro"] if is_puzzle else urow["seen_scenario_intro"])
+    if already_seen and not st.session_state.get("force_show_mode_intro"):
+        _launch_pending_action(pending)
+        return
+
     st.markdown(
         f"<div class='sh-title'>{'🧩' if is_puzzle else '🎭'} "
         f"How {'Puzzle' if is_puzzle else 'Scenario'} Mode Works</div>",
@@ -219,6 +286,11 @@ def render_mode_intro():
         st.session_state.pending_action = None
         _goto("home")
     if c2.button("✅ Ready to play!", key="ready_to_play_btn", use_container_width=True):
+        if is_puzzle:
+            db.mark_puzzle_intro_seen(user["display_name"])
+        else:
+            db.mark_scenario_intro_seen(user["display_name"])
+        st.session_state.pop("force_show_mode_intro", None)
         _launch_pending_action(pending)
 
 
@@ -236,8 +308,9 @@ def _launch_pending_action(pending: dict):
             # plays their own quick-fire round and the XP flows to the team.
             _goto("puzzle", level=level, scope="team")
         else:
+            round_seconds = ge.effective_seconds(SCENARIO_ROUND_SECONDS, user["display_name"])
             sid = ge.start_team_lobby(pending["team_key"], user["display_name"], mode, level,
-                                       round_seconds=SCENARIO_ROUND_SECONDS)
+                                       round_seconds=round_seconds)
             _goto("lobby", session_id=sid)
     else:
         if mode == "puzzle":
@@ -245,8 +318,9 @@ def _launch_pending_action(pending: dict):
         else:
             # Individual mode has no lobby wait -- start instantly with a
             # hat already assigned, per the "instant start" design note.
+            round_seconds = ge.effective_seconds(SCENARIO_ROUND_SECONDS, user["display_name"])
             sid = ge.start_individual_session(user["display_name"], user["display_name"], "scenario", level,
-                                                round_seconds=SCENARIO_ROUND_SECONDS)
+                                                round_seconds=round_seconds)
             ge.begin_round(sid, "scenario", level)
             _goto("lobby", session_id=sid)
 
@@ -338,6 +412,7 @@ def render_lobby():
             if st.button("🎯 Play with them", key="join_round_btn", type="primary",
                          use_container_width=True):
                 ge.join_scenario_round(session_id, user["display_name"])
+                db.rejoin_session(session_id, user["display_name"])
                 st.rerun()
 
         if is_host:
@@ -349,16 +424,41 @@ def render_lobby():
                 st.info("Waiting for the host to start the round…")
             st.button("🔄 Refresh", use_container_width=True)
 
-        if st.button("🚪 Leave", key="leave_lobby_btn", use_container_width=True):
-            ge.player_leaves(session_id, user["display_name"])
-            if is_team:
-                db.leave_team(session["team_key"], user["display_name"])
-                st.session_state.team_key = None
-            _goto("home")
+        if is_team:
+            if st.session_state.get("confirm_leave_team"):
+                st.warning("⚠️ This leaves your team entirely, not just this round — you'll need "
+                           "the team password again to rejoin. Are you sure?")
+                lc1, lc2 = st.columns(2)
+                if lc1.button("✅ Yes, leave the team", key="confirm_leave_team_yes",
+                               type="primary", use_container_width=True):
+                    ge.player_leaves(session_id, user["display_name"])
+                    db.leave_team(session["team_key"], user["display_name"])
+                    st.session_state.team_key = None
+                    st.session_state["confirm_leave_team"] = False
+                    _goto("home")
+                if lc2.button("❌ Cancel", key="confirm_leave_team_no", use_container_width=True):
+                    st.session_state["confirm_leave_team"] = False
+                    st.rerun()
+            elif st.button("🚪 Leave team", key="leave_lobby_btn", use_container_width=True):
+                st.session_state["confirm_leave_team"] = True
+                st.rerun()
+        else:
+            if st.button("🚪 Leave", key="leave_lobby_btn", use_container_width=True):
+                ge.player_leaves(session_id, user["display_name"])
+                _goto("home")
         return
 
     # ----- active or finished -----
     my_row = next((p for p in players if p["name_key"] == user["name_key"]), None)
+
+    if (my_row and my_row["left_game"] and session["status"] == "active"
+            and not my_row["submitted"]):
+        st.warning("You were marked as having left this round (likely a brief connection or "
+                   "backgrounding blip) — you can rejoin if the round is still going.")
+        if st.button("↩️ Rejoin round", key="rejoin_round_btn", type="primary", use_container_width=True):
+            db.rejoin_session(session_id, user["display_name"])
+            st.rerun()
+        return
 
     # Heartbeat: proves this player is still here, reaps anyone stale, and
     # auto-ends the round if nobody real is left in it.
@@ -518,8 +618,9 @@ def _render_scenario_results(session, scenario, players, is_team):
     c1, c2 = st.columns(2)
     if is_team and c1.button("🔁 Play again with same team", type="primary", use_container_width=True):
         team_key = session["team_key"]
+        round_seconds = ge.effective_seconds(SCENARIO_ROUND_SECONDS, st.session_state.user["display_name"])
         sid = ge.start_team_lobby(team_key, st.session_state.user["display_name"], "scenario", session["level"],
-                                   round_seconds=SCENARIO_ROUND_SECONDS)
+                                   round_seconds=round_seconds)
         _goto("lobby", session_id=sid)
     if c2.button("🏠 Back to home", use_container_width=True):
         ge.player_leaves(session["session_id"], st.session_state.user["display_name"])
@@ -533,11 +634,13 @@ def render_puzzle():
     scope = st.session_state.get("scope", "individual")
 
     if "puzzle" not in st.session_state:
+        seconds = ge.effective_seconds(PUZZLE_SECONDS_PER_QUESTION, user["display_name"])
         st.session_state.puzzle = {
             "idx": 0, "score": 0, "log": [],
             "q": hats_module.random_puzzle_question(level),
             "q_start": time.time(),
             "exclude": set(),
+            "seconds_per_q": seconds,
         }
     pz = st.session_state.puzzle
 
@@ -546,13 +649,7 @@ def render_puzzle():
         st.warning("⚠️ Leaving now ends this round early and reduces your score. Are you sure?")
         lc1, lc2 = st.columns(2)
         if lc1.button("✅ Yes, leave", key="confirm_leave_yes", type="primary", use_container_width=True):
-            penalty = min(PUZZLE_LEAVE_PENALTY, max(pz["score"], 0))
-            if scope == "team" and st.session_state.get("team_key"):
-                db.add_team_xp(st.session_state.team_key, -penalty)
-                for m in db.get_team_members(st.session_state.team_key):
-                    db.add_user_xp(m["display_name"], -penalty, individual=False)
-            else:
-                db.add_user_xp(user["display_name"], -penalty, individual=True)
+            penalty = _apply_puzzle_leave_penalty(pz)
             pz["score"] -= penalty
             pz["left_early"] = True
             st.session_state["confirm_leave_puzzle"] = False
@@ -571,7 +668,7 @@ def render_puzzle():
         st.rerun()
 
     elapsed = time.time() - pz["q_start"]
-    left = max(0, PUZZLE_SECONDS_PER_QUESTION - elapsed)
+    left = max(0, pz.get("seconds_per_q", PUZZLE_SECONDS_PER_QUESTION) - elapsed)
     comp.render_timer(left)
 
     q = pz["q"]
@@ -584,8 +681,6 @@ def render_puzzle():
         xp = xp_engine.puzzle_xp(level, False, 0)
         if scope == "team" and st.session_state.get("team_key"):
             db.add_team_xp(st.session_state.team_key, xp)
-            for m in db.get_team_members(st.session_state.team_key):
-                db.add_user_xp(m["display_name"], xp, individual=False)
         else:
             db.add_user_xp(user["display_name"], xp, individual=True)
         pz["score"] += xp
@@ -600,8 +695,6 @@ def render_puzzle():
             xp = xp_engine.puzzle_xp(level, is_correct, left)
             if scope == "team" and st.session_state.get("team_key"):
                 db.add_team_xp(st.session_state.team_key, xp)
-                for m in db.get_team_members(st.session_state.team_key):
-                    db.add_user_xp(m["display_name"], xp, individual=False)
             else:
                 db.add_user_xp(user["display_name"], xp, individual=True)
             pz["score"] += xp
@@ -686,8 +779,12 @@ def render_dashboard():
             st.write("No team scores yet.")
         for i, r in enumerate(rows, 1):
             medal = {1: "🥇", 2: "🥈", 3: "🥉"}.get(i, f"{i}.")
+            team_row = db.get_team_by_id(r["team_id"])
+            members = db.get_team_members(team_row["team_key"]) if team_row else []
+            member_names = ", ".join(m["display_name"] for m in members) or "no active members"
             st.markdown(f"<div class='sh-card'>{medal} <b>{r['display_name']}</b> "
-                        f"<span class='sh-pill'>ID {r['team_id']}</span> — {r['xp']} xp</div>", unsafe_allow_html=True)
+                        f"<span class='sh-pill'>ID {r['team_id']}</span> — {r['xp']} xp"
+                        f"<div class='sh-soft'>👤 {member_names}</div></div>", unsafe_allow_html=True)
 
     if st.button("🏠 Back to home", use_container_width=True):
         _goto("home")

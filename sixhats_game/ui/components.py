@@ -146,9 +146,10 @@ def render_timer(seconds_left: float):
 
 def render_xp_bar(total_xp: int, label: str = "Your progress"):
     prog = xp_engine.level_progress(total_xp)
+    shown_xp = max(0, total_xp)  # matches the clamped bar -- see xp_engine.level_progress
     st.markdown(
         f"<div class='sh-soft'>{label} — Level: <b>{prog['level'].title()}</b> "
-        f"({total_xp} XP total)</div>",
+        f"({shown_xp} XP total)</div>",
         unsafe_allow_html=True,
     )
     st.progress(prog["pct"] / 100)

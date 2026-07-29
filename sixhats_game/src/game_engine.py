@@ -17,6 +17,21 @@ from src import xp_engine
 from src import evaluator
 
 
+RELAXED_TIMING_MULTIPLIER = 1.5
+
+
+def effective_seconds(base_seconds: float, user_name: str) -> float:
+    """Scales a base timer duration up for any player who has turned on the
+    'relaxed timing' accessibility preference on their account (see
+    src/database.set_relaxed_timing / ui/screens.py Home screen toggle).
+    Motor-impaired or slower-typing players otherwise had no way to get
+    more time on a fixed 90s/120s clock."""
+    urow = db.get_user(user_name) if user_name else None
+    if urow and urow["relaxed_timing"]:
+        return base_seconds * RELAXED_TIMING_MULTIPLIER
+    return base_seconds
+
+
 # ------------------------------------------------------------- creation ---
 def start_team_lobby(team_key: str, host_name: str, mode: str, level: str, round_seconds=120):
     """Host creates a new lobby session for their team. Only the host can do
@@ -109,9 +124,10 @@ def auto_submit_timeout(session_id: str, scenario: dict, skip_name_key: str | No
             p["hat_color"], "", scenario
         )
         bonus = xp_engine.scenario_individual_bonus(0, creativity, is_first)
-        db.submit_answer(session_id, p["display_name"], "", on_topic, correction,
-                          creativity, base_xp=0, speed_xp=bonus, first_submit=is_first)
-        db.add_user_xp(p["display_name"], bonus, individual=not is_team)
+        recorded = db.submit_answer(session_id, p["display_name"], "", on_topic, correction,
+                                     creativity, base_xp=0, speed_xp=bonus, first_submit=is_first)
+        if recorded:
+            db.add_user_xp(p["display_name"], bonus, individual=not is_team)
 
 
 def maybe_finish_session(session_id: str):
