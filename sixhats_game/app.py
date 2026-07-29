@@ -20,6 +20,7 @@ from ui import screens
 st.set_page_config(page_title="Six Hats Arena", page_icon="🎩", layout="centered")
 
 db.init_db()
+db.reap_abandoned_teams_throttled()
 
 # ------------------------------------------------------------- session ----
 if "theme" not in st.session_state:
@@ -51,6 +52,9 @@ if st.session_state.user is None and "u" in st.query_params and "t" in st.query_
         st.query_params.clear()
 
 styles.inject(st.session_state.theme)
+
+if st.session_state.user:
+    db.touch_user(st.session_state.user["display_name"])
 
 # --------------------------------------------------------------- topbar ----
 if st.session_state.screen != "login":

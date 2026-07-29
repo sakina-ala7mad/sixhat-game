@@ -223,12 +223,33 @@ def render_home():
             m = "scenario" if mode.startswith("Scenario") else "puzzle"
             _goto("mode_intro", pending_action={"scope": "team", "mode": m, "level": level, "team_key": team_key})
 
-        if st.button("Leave team", key="leave_team_btn", use_container_width=True):
-            was_last = db.leave_team(team_key, user["display_name"])
-            st.session_state.team_key = None
-            if was_last:
-                st.toast("You were the last member — this team has been deleted. "
-                         "The name is free again for a new team.")
+        if st.session_state.get("confirm_leave_team_home"):
+            sole_member = db.active_member_count(team_key) <= 1
+            if sole_member:
+                st.warning(
+                    "⚠️ You're the **last member** of this team. Leaving now will "
+                    "**delete the team** and permanently lose its scenario-mode team "
+                    "score -- this can't be undone. Are you sure?"
+                )
+            else:
+                st.warning(
+                    "⚠️ This leaves your team entirely, not just this round -- you'll "
+                    "need the team password again to rejoin. Are you sure?"
+                )
+            lc1, lc2 = st.columns(2)
+            if lc1.button("✅ Yes, leave the team", key="confirm_leave_team_home_yes",
+                           type="primary", use_container_width=True):
+                was_last = db.leave_team(team_key, user["display_name"])
+                st.session_state.team_key = None
+                st.session_state["confirm_leave_team_home"] = False
+                if was_last:
+                    st.toast("Team deleted — its score is gone, but the name is free again.")
+                st.rerun()
+            if lc2.button("❌ Cancel", key="confirm_leave_team_home_no", use_container_width=True):
+                st.session_state["confirm_leave_team_home"] = False
+                st.rerun()
+        elif st.button("Leave team", key="leave_team_btn", use_container_width=True):
+            st.session_state["confirm_leave_team_home"] = True
             st.rerun()
 
     else:
@@ -429,8 +450,16 @@ def render_lobby():
 
         if is_team:
             if st.session_state.get("confirm_leave_team"):
-                st.warning("⚠️ This leaves your team entirely, not just this round — you'll need "
-                           "the team password again to rejoin. Are you sure?")
+                sole_member = db.active_member_count(session["team_key"]) <= 1
+                if sole_member:
+                    st.warning(
+                        "⚠️ You're the **last member** of this team. Leaving now will "
+                        "**delete the team** and permanently lose its scenario-mode team "
+                        "score -- this can't be undone. Are you sure?"
+                    )
+                else:
+                    st.warning("⚠️ This leaves your team entirely, not just this round — you'll need "
+                               "the team password again to rejoin. Are you sure?")
                 lc1, lc2 = st.columns(2)
                 if lc1.button("✅ Yes, leave the team", key="confirm_leave_team_yes", type="primary", use_container_width=True):
                     ge.player_leaves(session_id, user["display_name"])
@@ -513,9 +542,10 @@ def render_lobby():
                 my_row["hat_color"], draft_answer, scenario
             )
             bonus = xp_engine.scenario_individual_bonus(0, creativity, is_first)
-            db.submit_answer(session_id, user["display_name"], draft_answer, on_topic, correction,
-                              creativity, base_xp=0, speed_xp=bonus, first_submit=is_first)
-            db.add_user_xp(user["display_name"], bonus, individual=not is_team)
+            recorded = db.submit_answer(session_id, user["display_name"], draft_answer, on_topic, correction,
+                                         creativity, base_xp=0, speed_xp=bonus, first_submit=is_first)
+            if recorded:
+                db.add_user_xp(user["display_name"], bonus, individual=not is_team)
         ge.auto_submit_timeout(session_id, scenario, skip_name_key=user["name_key"])
         ge.maybe_finish_session(session_id)
         st.rerun()
@@ -527,14 +557,18 @@ def render_lobby():
         answer = st.text_area("Your response from this hat's point of view", max_chars=300, disabled=already,
                                key=f"answer_{session_id}", placeholder="Up to 300 characters…")
         if not already:
+            st.caption("💡 Click outside the box (or press Ctrl+Enter) after typing so your draft actually "
+                       "saves — if the timer runs out, whatever's saved gets submitted and scored "
+                       "automatically, even if it's unfinished.")
             if st.button("✅ Submit answer", type="primary", use_container_width=True):
                 secs_left = ge.seconds_left(session)
                 is_first = ge.is_first_submitter(session_id)
                 on_topic, creativity, correction = evaluator.evaluate_scenario_answer(my_hat, answer, scenario)
                 bonus = xp_engine.scenario_individual_bonus(secs_left, creativity, is_first)
-                db.submit_answer(session_id, user["display_name"], answer, on_topic, correction,
-                                  creativity, base_xp=0, speed_xp=bonus, first_submit=is_first)
-                db.add_user_xp(user["display_name"], bonus, individual=not is_team)
+                recorded = db.submit_answer(session_id, user["display_name"], answer, on_topic, correction,
+                                             creativity, base_xp=0, speed_xp=bonus, first_submit=is_first)
+                if recorded:
+                    db.add_user_xp(user["display_name"], bonus, individual=not is_team)
                 ge.maybe_finish_session(session_id)
                 st.rerun()
         else:

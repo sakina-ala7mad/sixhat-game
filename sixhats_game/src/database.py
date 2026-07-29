@@ -377,6 +377,70 @@ def active_member_count(team_key: str) -> int:
         return row["c"]
 
 
+ABANDONED_TEAM_SECONDS = 60 * 60 * 24 * 14  # 14 days of no activity from ANY active member
+_last_reap_at = 0.0
+_REAP_THROTTLE_SECONDS = 60 * 60  # only actually scan once per hour per running process
+
+
+def reap_abandoned_teams(inactive_after: float = ABANDONED_TEAM_SECONDS) -> list[str]:
+    """Deletes teams where every currently-active member has gone quiet (no
+    login, no app activity -- see users.last_seen / touch_user()) for longer
+    than `inactive_after`. This is the fix for the "nobody ever clicked
+    Leave team, they just closed the tab" case: without it, a team whose
+    members walked away forever would sit around as an 'active' team, with
+    its name permanently unavailable, until the end of time.
+
+    A team with zero currently-active members (which shouldn't normally
+    happen -- leave_team() already deletes the team when the last member
+    explicitly leaves -- but could arise from an edge case or manual DB
+    tinkering) is reaped unconditionally as a defensive cleanup.
+
+    Returns the list of team_keys that were reaped, mainly for testing."""
+    with _lock:
+        with get_conn() as conn:
+            cutoff = time.time() - inactive_after
+            teams = conn.execute("SELECT team_key FROM teams").fetchall()
+            reaped = []
+            for t in teams:
+                team_key = t["team_key"]
+                members = conn.execute(
+                    "SELECT tm.name_key, u.last_seen FROM team_members tm "
+                    "JOIN users u ON u.name_key = tm.name_key "
+                    "WHERE tm.team_key=? AND tm.active=1",
+                    (team_key,),
+                ).fetchall()
+                if not members:
+                    should_reap = True
+                else:
+                    most_recent_activity = max((m["last_seen"] or 0) for m in members)
+                    should_reap = most_recent_activity < cutoff
+                if should_reap:
+                    member_keys = [m["name_key"] for m in members]
+                    conn.execute("DELETE FROM team_members WHERE team_key=?", (team_key,))
+                    conn.execute("DELETE FROM teams WHERE team_key=?", (team_key,))
+                    if member_keys:
+                        placeholders = ",".join("?" * len(member_keys))
+                        conn.execute(
+                            f"UPDATE users SET current_team=NULL WHERE name_key IN ({placeholders})",
+                            member_keys,
+                        )
+                    reaped.append(team_key)
+            return reaped
+
+
+def reap_abandoned_teams_throttled(inactive_after: float = ABANDONED_TEAM_SECONDS) -> list[str]:
+    """Same as reap_abandoned_teams(), but only actually runs the scan once
+    per _REAP_THROTTLE_SECONDS per running process. Safe to call on every
+    single Streamlit rerun (see app.py) -- most calls are a no-op timestamp
+    check, so this doesn't add real per-request DB load."""
+    global _last_reap_at
+    now = time.time()
+    if now - _last_reap_at < _REAP_THROTTLE_SECONDS:
+        return []
+    _last_reap_at = now
+    return reap_abandoned_teams(inactive_after)
+
+
 def add_team_xp(team_key: str, amount: int):
     with get_conn() as conn:
         conn.execute(
